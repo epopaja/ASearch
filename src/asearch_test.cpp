@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include "fir11_kernel.h"
+#include "asearch_kernel.h"
 //#include <iostream>
 #include <fstream>
 
