@@ -1,7 +1,5 @@
 /*
-        Filename: asearch_kernel.h
-                Header file
-
+* Based off of https://www.geeksforgeeks.org/a-search-algorithm/
 */
 #ifndef ASEARCH_H_
 #define ASEARCH_H_
@@ -45,6 +43,8 @@ extern "C"
     void tracePath(result r, cell cellDetails[][COL], Pair dest);
 
     int** readGrid(const char* file);
+
+    bool checkF(cell cellDetails[][], int i, int j, double f);
 
     void aStarSearch(int grid[][COL], Pair src, Pair dest);
 }

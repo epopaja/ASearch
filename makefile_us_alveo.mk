@@ -48,11 +48,11 @@ include ./utils.mk
 TEMP_DIR := ./_x.$(TARGET).$(XSA)
 BUILD_DIR := ./build_dir.$(TARGET).$(XSA)
 
-LINK_OUTPUT := $(BUILD_DIR)/fir11.link.xclbin
+LINK_OUTPUT := $(BUILD_DIR)/asearch.link.xclbin
 PACKAGE_OUT = ./package.$(TARGET)
 
 VPP_PFLAGS := 
-CMD_ARGS = -x $(BUILD_DIR)/fir11.xclbin
+CMD_ARGS = -x $(BUILD_DIR)/asearch.xclbin
 CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -Wall -O0 -g -std=c++1y -I/tools/Xilinx/Vitis_HLS/2023.1/include/
 LDFLAGS += -L$(XILINX_XRT)/lib -pthread -lOpenCL -lxrt_coreutil
 
@@ -62,7 +62,7 @@ PLATFORM_BLOCKLIST += nodma
 #Include Required Host Source Files
 CXXFLAGS += -I$(XF_PROJ_ROOT)/common/includes/cmdparser
 CXXFLAGS += -I$(XF_PROJ_ROOT)/common/includes/logger
-HOST_SRCS += $(XF_PROJ_ROOT)/common/includes/cmdparser/cmdlineparser.cpp $(XF_PROJ_ROOT)/common/includes/logger/logger.cpp ./src/fir11_host.cpp 
+HOST_SRCS += $(XF_PROJ_ROOT)/common/includes/cmdparser/cmdlineparser.cpp $(XF_PROJ_ROOT)/common/includes/logger/logger.cpp ./src/asearch_host.cpp 
 # Host compiler global settings
 CXXFLAGS += -fmessage-length=0
 LDFLAGS += -lrt -lstdc++ 
@@ -73,31 +73,31 @@ LDFLAGS += -luuid -lxrt_coreutil
 VPP_FLAGS += --save-temps 
 
 
-EXECUTABLE = ./fir11_xrt
+EXECUTABLE = ./asearch_xrt
 EMCONFIG_DIR = $(TEMP_DIR)
 
 ############################## Setting Targets ##############################
 .PHONY: all clean cleanall docs emconfig
-all: check-platform check-device check-vitis $(EXECUTABLE) $(BUILD_DIR)/fir11.xclbin emconfig
+all: check-platform check-device check-vitis $(EXECUTABLE) $(BUILD_DIR)/asearch.xclbin emconfig
 
 .PHONY: host
 host: $(EXECUTABLE)
 
 .PHONY: build
-build: check-vitis check-device $(BUILD_DIR)/fir11.xclbin
+build: check-vitis check-device $(BUILD_DIR)/asearch.xclbin
 
 .PHONY: xclbin
 xclbin: build
 
 ############################## Setting Rules for Binary Containers (Building Kernels) ##############################
-$(TEMP_DIR)/fir11.xo: src/fir11_kernel.cpp
+$(TEMP_DIR)/asearch.xo: src/asearch_kernel.cpp
 	mkdir -p $(TEMP_DIR)
 	v++ -c $(VPP_FLAGS) -t $(TARGET) --platform $(PLATFORM) -k fir --temp_dir $(TEMP_DIR)  -I'$(<D)' -o'$@' '$<' 
 
-$(BUILD_DIR)/fir11.xclbin: $(TEMP_DIR)/fir11.xo 
+$(BUILD_DIR)/asearch.xclbin: $(TEMP_DIR)/asearch.xo 
 	mkdir -p $(BUILD_DIR)
 	v++ -l $(VPP_FLAGS) $(VPP_LDFLAGS) -t $(TARGET) --platform $(PLATFORM) --temp_dir $(TEMP_DIR) -o'$(LINK_OUTPUT)' $(+) --profile.data all:all:all --connectivity.nk fir:1
-	v++ -p $(LINK_OUTPUT) $(VPP_FLAGS) -t $(TARGET) --platform $(PLATFORM) --package.out_dir $(PACKAGE_OUT) -o $(BUILD_DIR)/fir11.xclbin 
+	v++ -p $(LINK_OUTPUT) $(VPP_FLAGS) -t $(TARGET) --platform $(PLATFORM) --package.out_dir $(PACKAGE_OUT) -o $(BUILD_DIR)/asearch.xclbin 
 
 ############################## Setting Rules for Host (Building Host Executable) ##############################
 $(EXECUTABLE): $(HOST_SRCS) | check-xrt

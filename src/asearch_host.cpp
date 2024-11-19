@@ -15,7 +15,7 @@
  */
 
 #include "cmdlineparser.h"
-#include "fir11_kernel.h"
+#include "asearch_host.h"
 #include <cstdio>
 #include <cstring>
 #include <fstream>

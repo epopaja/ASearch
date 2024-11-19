@@ -1,4 +1,5 @@
 /*
+* Based off of https://www.geeksforgeeks.org/a-search-algorithm/
 */
 
 #include "asearch_kernel.h"
@@ -103,7 +104,7 @@ extern "C"
         {
             for (int j = 0; j < COL; j++)
             {
-                fscanf(pFile, "%f", val);
+                fscanf(pFile, "%i", &val);
                 rtnVal[i][j] = val
             }
         }
@@ -171,7 +172,7 @@ extern "C"
         openList.insert(make_pair(0.0, make_pair(i, j)));
         bool foundDest = false;
 
-        while (!openList.empty())
+        while (!openList.empty() && !foundDest)
         {
             pPair = *openList.begin();
 
@@ -182,11 +183,11 @@ extern "C"
             closedList[i][j] = true;
 
             /*
-            Cell-->Popped Cell (i, j)
+            Cell-->Popped Cell (i,   j)
             N -->  North       (i-1, j)
             S -->  South       (i+1, j)
-            E -->  East        (i, j+1)
-            W -->  West           (i, j-1)
+            E -->  East        (i,   j+1)
+            W -->  West        (i,   j-1)
             N.E--> North-East  (i-1, j+1)
             N.W--> North-West  (i-1, j-1)
             S.E--> South-East  (i+1, j+1)
@@ -214,12 +215,227 @@ extern "C"
                     newH = calculateHValue(newI, newJ, dest);
                     newF = newG + newH;
 
-                    if (cellDetails[newI][newJ].f == FLT_MAX ||
-                        cellDetails[newI][newJ].f > newF)
+                    if (checkF(cellDetails, newI, newJ, newF))
                     {
                         openList.insert(make_pair(newF,
                             make_pair(newI, newJ)));
 
+                        cellDetails[newI][newJ].f = newF;
+                        cellDetails[newI][newJ].g = newG;
+                        cellDetails[newI][newJ].h = newH;
+                        cellDetails[newI][newJ].parent_i = i;
+                        cellDetails[newI][newJ].parent_j = j;
+                    }
+                }
+            }
+
+            // Check South
+            newI = i + 1;
+            newJ = j;
+            if (isValid(newI, newJ))
+            {
+                if (isDestination(newI, newJ, dest))
+                {
+                    cellDetails[newI][newJ].parent_i = i;
+                    cellDetails[newI][newJ].parent_j = j;
+                    foundDest = true;
+                    break;
+                }
+                else if (!closedList[newI][newJ] &&
+                    isUnBlocked(grid, newI, newJ))
+                {
+                    newG = cellDetails[newI][newJ].g + 1.0;
+                    newH = calculateHValue(newI, newJ, dest);
+                    newF = newG + newH;
+
+                    if (checkF(cellDetails, newI, newJ, newF))
+                    {
+                        openList.Insert(make_pair(newF,
+                            make_pair(newI, newJ)));
+                        cellDetails[newI][newJ].f = newF;
+                        cellDetails[newI][newJ].g = newG;
+                        cellDetails[newI][newJ].h = newH;
+                        cellDetails[newI][newJ].parent_i = i;
+                        cellDetails[newI][newJ].parent_j = j;
+                    }
+                }
+            }
+
+            // Check East
+            newI = i;
+            newJ = j + 1;
+            if (isValid(newI, newJ))
+            {
+                if (isDestination(newI, newJ, dest))
+                {
+                    cellDetails[newI][newJ].parent_i = i;
+                    cellDetails[newI][newJ].parent_j = j;
+                    foundDest = true;
+                    break;
+                }
+                else if (!closedList[newI][newJ] &&
+                    isUnBlocked(grid, newI, newJ))
+                {
+                    newG = cellDetails[i][j].g + 1.0;
+                    newH = calculateHValue(newI, newJ, dest);
+                    newF = newG + newH;
+
+                    if (checkF(cellDetails, newI, newJ, newF))
+                    {
+                        openList.insert(make_pair(newF, make_pair(newI, newJ)));
+
+                        cellDetails[newI][newJ].f = newF;
+                        cellDetails[newI][newJ].g = newG;
+                        cellDetails[newI][newJ].h = newH;
+                        cellDetails[newI][newJ].parent_i = i;
+                        cellDetails[newI][newJ].parent_j = j;
+                    }
+                }
+            }
+
+            // Check West
+            newI = i;
+            newJ = j - 1;
+            if (isValid(newI, newJ))
+            {
+                if (isDestination(newI, newJ, dest))
+                {
+                    cellDetails[newI][newJ].parent_i = i;
+                    cellDetails[newI][newJ].parent_j = j;
+                    foundDest = true;
+                    break;
+                }
+                else if (!closedList[newI][newJ] &&
+                    isUnBlocked(grid, newI, newJ))
+                {
+                    newG = cellDetails[i][j].g + 1.0;
+                    newH = calculateHValue(newI, newJ, dest);
+                    newF = newG + newH;
+
+                    if (checkF(cellDetails, newI, newJ, newF))
+                    {
+                        openList.insert(make_pair(newF, make_pair(newI, newJ)));
+
+                        cellDetails[newI][newJ].f = newF;
+                        cellDetails[newI][newJ].g = newG;
+                        cellDetails[newI][newJ].h = newH;
+                        cellDetails[newI][newJ].parent_i = i;
+                        cellDetails[newI][newJ].parent_j = j;
+                    }
+                }
+            }
+
+            // Check North-East
+            newI = i - 1;
+            newJ = j + 1;
+            if (isValid(newI, newJ))
+            {
+                if (isDestination(newI, newJ, dest))
+                {
+                    cellDetails[newI][newJ].parent_i = i;
+                    cellDetails[newI][newJ].parent_j = j;
+                    foundDest = true;
+                    break;
+                }
+                else if (!closedList[newI][newJ] &&
+                    isUnBlocked(grid, newI, newJ))
+                {
+                    newG = cellDetails[newI][newJ].g + 1.414;
+                    newH = calculateHValue(newI, newJ, dest);
+                    newF = newG + newH;
+
+                    if (checkF(cellDetails, newI, newJ, newF))
+                    {
+                        cellDetails[newI][newJ].f = newF;
+                        cellDetails[newI][newJ].g = newG;
+                        cellDetails[newI][newJ].h = newH;
+                        cellDetails[newI][newJ].parent_i = i;
+                        cellDetails[newI][newJ].parent_j = j;
+                    }
+                }
+            }
+
+            // Check North-West
+            newI = i - 1;
+            newJ = j - 1;
+            if (isValid(newI, newJ))
+            {
+                if (isDestination(newI, newJ, dest))
+                {
+                    cellDetails[newI][newJ].parent_i = i;
+                    cellDetails[newI][newJ].parent_j = j;
+                    foundDest = true;
+                    break;
+                }
+                else if (!closedList[newI][newJ] &&
+                    isUnBlocked(grid, newI, newJ))
+                {
+                    newG = cellDetails[newI][newJ].g + 1.414;
+                    newH = calculateHValue(newI, newJ, dest);
+                    newF = newG + newH;
+
+                    if (checkF(cellDetails, newI, newJ, newF))
+                    {
+                        cellDetails[newI][newJ].f = newF;
+                        cellDetails[newI][newJ].g = newG;
+                        cellDetails[newI][newJ].h = newH;
+                        cellDetails[newI][newJ].parent_i = i;
+                        cellDetails[newI][newJ].parent_j = j;
+                    }
+                }
+            }
+
+            // Check South-East
+            newI = i + 1;
+            newJ = j + 1;
+            if (isValid(newI, newJ))
+            {
+                if (isDestination(newI, newJ, dest))
+                {
+                    cellDetails[newI][newJ].parent_i = i;
+                    cellDetails[newI][newJ].parent_j = j;
+                    foundDest = true;
+                    break;
+                }
+                else if (!closedList[newI][newJ] &&
+                    isUnBlocked(grid, newI, newJ))
+                {
+                    newG = cellDetails[newI][newJ].g + 1.414;
+                    newH = calculateHValue(newI, newJ, dest);
+                    newF = newG + newH;
+
+                    if (checkF(cellDetails, newI, newJ, newF))
+                    {
+                        cellDetails[newI][newJ].f = newF;
+                        cellDetails[newI][newJ].g = newG;
+                        cellDetails[newI][newJ].h = newH;
+                        cellDetails[newI][newJ].parent_i = i;
+                        cellDetails[newI][newJ].parent_j = j;
+                    }
+                }
+            }
+
+            // Check South-West
+            newI = i + 1;
+            newJ = j - 1;
+            if (isValid(newI, newJ))
+            {
+                if (isDestination(newI, newJ, dest))
+                {
+                    cellDetails[newI][newJ].parent_i = i;
+                    cellDetails[newI][newJ].parent_j = j;
+                    foundDest = true;
+                    break;
+                }
+                else if (!closedList[newI][newJ] &&
+                    isUnBlocked(grid, newI, newJ))
+                {
+                    newG = cellDetails[newI][newJ].g + 1.414;
+                    newH = calculateHValue(newI, newJ, dest);
+                    newF = newG + newH;
+
+                    if (checkF(cellDetails, newI, newJ, newF))
+                    {
                         cellDetails[newI][newJ].f = newF;
                         cellDetails[newI][newJ].g = newG;
                         cellDetails[newI][newJ].h = newH;
@@ -233,5 +449,10 @@ extern "C"
         r = foundDest ? FOUND_PATH : PATH_NOT_FOUND;
 
         tracePath(r, cellDetails, dest);
+    }
+
+    bool checkF(cell cellDetails[][], int i, int j, double f)
+    {
+        return cell[i][j] == FLT_MAX || cellDetails[i][j].f > f;
     }
 }
