@@ -15,7 +15,7 @@
  */
 
 #include "cmdlineparser.h"
-#include "asearch_host.h"
+#include "asearch_kernel.h"
 #include <cstdio>
 #include <cstring>
 #include <fstream>
@@ -69,6 +69,7 @@ int main(int argc, char **argv) {
   file_in.open("input.dat");
   file_out.open("out.dat");
 
+/*
   data_t signal;
   signal = 0;
   std::cout << "Execution of the kernel\n";
@@ -110,6 +111,6 @@ int main(int argc, char **argv) {
   std::cout << "*******************************************" << std::endl;
   std::cout << "PASS: The output matches the golden output" << std::endl;
   std::cout << "*******************************************" << std::endl;
-
+*/
   return 0;
 }

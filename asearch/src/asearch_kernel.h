@@ -9,6 +9,8 @@
 
 #include <bits/stdc++.h>
 
+using namespace std;
+
 enum result
 {
     PATH_NOT_FOUND = -1,
@@ -17,11 +19,11 @@ enum result
     INVALID_DESTINATION = 2,
     PATH_IS_BLOCKED = 3,
     ALREADY_AT_DESTINATION = 4,
-}
+};
 
-typedef std::pair<int, int> Pair;
+typedef pair<int, int> Pair;
 
-typedef std::pair<double, pair<int, int>> pPair;
+typedef pair<double, pair<int, int>> pPair;
 
 struct cell
 {
@@ -44,7 +46,7 @@ extern "C"
 
     int** readGrid(const char* file);
 
-    bool checkF(cell cellDetails[][], int i, int j, double f);
+    bool checkF(cell cellDetails[][COL], int i, int j, double f);
 
     void aStarSearch(int grid[][COL], Pair src, Pair dest);
 }
