@@ -93,7 +93,7 @@ extern "C"
         fclose(pFile);
     }
 
-    void readGrid(const char* file, int grid[ROW][COl])
+    void readGrid(const char* file, int grid[ROW][COL])
     {
         FILE* pFile = fopen(file, "r");
 
@@ -103,7 +103,7 @@ extern "C"
             for (int j = 0; j < COL; j++)
             {
                 fscanf(pFile, "%i", &val);
-                rtnVal[i][j] = val
+                grid[i][j] = val
             }
         }
 
@@ -449,6 +449,6 @@ extern "C"
 
     bool checkF(cell cellDetails[ROW][COL], int i, int j, double f)
     {
-        return cellDetails[i][j] == FLT_MAX || cellDetails[i][j].f > f;
+        return cellDetails[i][j].f == FLT_MAX || cellDetails[i][j].f > f;
     }
 }
