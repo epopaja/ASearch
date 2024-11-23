@@ -103,7 +103,7 @@ extern "C"
             for (int j = 0; j < COL; j++)
             {
                 fscanf(pFile, "%i", &val);
-                grid[i][j] = val
+                grid[i][j] = val;
             }
         }
 
