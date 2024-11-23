@@ -66,8 +66,8 @@ extern "C"
                 Path.push(make_pair(row, col));
                 while (!Path.empty())
                 {
-                    pair<int, int> p = path.top();
-                    path.pop();
+                    pair<int, int> p = Path.top();
+                    Path.pop();
                     fprintf(pFile, "(%d,%d)\r\n", p.first, p.second);
                 }
             }
@@ -93,10 +93,8 @@ extern "C"
         fclose(pFile);
     }
 
-    int** readGrid(const char* file)
+    void readGrid(const char* file, int grid[ROW][COl])
     {
-        int rtnVal[ROW][COL];
-
         FILE* pFile = fopen(file, "r");
 
         int val;
@@ -110,8 +108,6 @@ extern "C"
         }
 
         fclose(pFile);
-
-        return rtnVal;
     }
 
     void aStarSearch(int grid[][COL], Pair src, Pair dest)
@@ -174,7 +170,7 @@ extern "C"
 
         while (!openList.empty() && !foundDest)
         {
-            pPair = *openList.begin();
+            pPair p = *openList.begin();
 
             openList.erase(openList.begin());
 
@@ -250,7 +246,7 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
-                        openList.Insert(make_pair(newF,
+                        openList.insert(make_pair(newF,
                             make_pair(newI, newJ)));
                         cellDetails[newI][newJ].f = newF;
                         cellDetails[newI][newJ].g = newG;
@@ -451,8 +447,8 @@ extern "C"
         tracePath(r, cellDetails, dest);
     }
 
-    bool checkF(cell cellDetails[][], int i, int j, double f)
+    bool checkF(cell cellDetails[ROW][COL], int i, int j, double f)
     {
-        return cell[i][j] == FLT_MAX || cellDetails[i][j].f > f;
+        return cellDetails[i][j] == FLT_MAX || cellDetails[i][j].f > f;
     }
 }

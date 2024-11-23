@@ -44,7 +44,7 @@ extern "C"
 
     void tracePath(result r, cell cellDetails[][COL], Pair dest);
 
-    int** readGrid(const char* file);
+    readGrid(const char* file, int grid[ROW][GRID]);
 
     bool checkF(cell cellDetails[][COL], int i, int j, double f);
 
