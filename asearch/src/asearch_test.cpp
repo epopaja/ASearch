@@ -32,7 +32,7 @@ int main () {
 	//read in signal
     file_in >> signal;
 	//Call the HLS block
-    fir(&output,signal);
+    asearch(&output,signal);
     // Save the results.
     file_out << output << std::endl;
     

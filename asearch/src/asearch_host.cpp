@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
   std::cout << "Load the xclbin " << binaryFile << std::endl;
   auto uuid = device.load_xclbin(binaryFile);
 
-  auto krnl = xrt::kernel(device, uuid, "fir");
+  auto krnl = xrt::kernel(device, uuid, "asearch");
 
   std::cout << "Allocate Small Buffer For Input in Device Memory\n";
   auto bo_out = xrt::bo(device, 128, krnl.group_id(0));

@@ -92,11 +92,11 @@ xclbin: build
 ############################## Setting Rules for Binary Containers (Building Kernels) ##############################
 $(TEMP_DIR)/asearch.xo: src/asearch_kernel.cpp
 	mkdir -p $(TEMP_DIR)
-	v++ -c $(VPP_FLAGS) -t $(TARGET) --platform $(PLATFORM) -k fir --temp_dir $(TEMP_DIR)  -I'$(<D)' -o'$@' '$<' 
+	v++ -c $(VPP_FLAGS) -t $(TARGET) --platform $(PLATFORM) -k asearch --temp_dir $(TEMP_DIR)  -I'$(<D)' -o'$@' '$<' 
 
 $(BUILD_DIR)/asearch.xclbin: $(TEMP_DIR)/asearch.xo 
 	mkdir -p $(BUILD_DIR)
-	v++ -l $(VPP_FLAGS) $(VPP_LDFLAGS) -t $(TARGET) --platform $(PLATFORM) --temp_dir $(TEMP_DIR) -o'$(LINK_OUTPUT)' $(+) --profile.data all:all:all --connectivity.nk fir:1
+	v++ -l $(VPP_FLAGS) $(VPP_LDFLAGS) -t $(TARGET) --platform $(PLATFORM) --temp_dir $(TEMP_DIR) -o'$(LINK_OUTPUT)' $(+) --profile.data all:all:all --connectivity.nk asearch:1
 	v++ -p $(LINK_OUTPUT) $(VPP_FLAGS) -t $(TARGET) --platform $(PLATFORM) --package.out_dir $(PACKAGE_OUT) -o $(BUILD_DIR)/asearch.xclbin 
 
 ############################## Setting Rules for Host (Building Host Executable) ##############################
