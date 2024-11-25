@@ -55,7 +55,7 @@ extern "C"
 
     bool checkF(cell cellDetails[][COL], int i, int j, double f);
 
-    void aStarSearch(int grid[][COL], Pair src, Pair dest);
+    void asearch(int grid[][COL], Pair src, Pair dest);
 }
 
 #endif

@@ -110,7 +110,7 @@ extern "C"
         fclose(pFile);
     }
 
-    void aStarSearch(int grid[][COL], Pair src, Pair dest)
+    void asearch(int grid[][COL], Pair src, Pair dest)
     {
         result r = PATH_NOT_FOUND;
 
