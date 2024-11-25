@@ -7,7 +7,6 @@
 #define ROW 9
 #define COL 10
 
-//#include <bits/stdc++.h>
 #include <utility>
 #include <set>
 #include <cstring>
