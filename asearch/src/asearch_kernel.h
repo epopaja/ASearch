@@ -7,7 +7,15 @@
 #define ROW 9
 #define COL 10
 
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
+#include <utility>
+#include <set>
+#include <cstring>
+#include <iostream>
+#include <math.h>
+#include <stack>
+#include <float.h>
+
 
 using namespace std;
 
