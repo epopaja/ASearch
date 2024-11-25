@@ -1,3 +1,13 @@
 
+# Linux ignores
+*.swp
+
+#HLS Ignores
+asearch/_x*
+asearch/build_dir*
+asearch/v++*
+asearch/xcd.log
+asearch/asearch_xrt
+
 #Visual Studio Ignores
 .vs/
