@@ -163,16 +163,18 @@ extern "C"
         cellDetails[i][j].parent_i = i;
         cellDetails[i][j].parent_j = j;
 
-        set<pPair> openList;
+        pPair openList[ROW * COL];
+        int index = 0;
+        init(&openList);
 
-        openList.insert(make_pair(0.0, make_pair(i, j)));
+        addPPair(&openList, make_pair(0.0, make_pair(i, j)));
         bool foundDest = false;
 
-        while (!openList.empty() && !foundDest)
+        while (!checkForEmpty(&openList) && !foundDest)
         {
-            pPair p = *openList.begin();
+            pPair p = getNext(&openList, &index);
 
-            openList.erase(openList.begin());
+            removePPair(index);
 
             i = p.second.first;
             j = p.second.second;
@@ -213,7 +215,7 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
-                        openList.insert(make_pair(newF,
+                        addPPair(&openList, make_pair(newF,
                             make_pair(newI, newJ)));
 
                         cellDetails[newI][newJ].f = newF;
@@ -246,7 +248,7 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
-                        openList.insert(make_pair(newF,
+                        addPPair(&openList, make_pair(newF,
                             make_pair(newI, newJ)));
                         cellDetails[newI][newJ].f = newF;
                         cellDetails[newI][newJ].g = newG;
@@ -278,7 +280,7 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
-                        openList.insert(make_pair(newF, make_pair(newI, newJ)));
+                        addPPair(&openList, make_pair(newF, make_pair(newI, newJ)));
 
                         cellDetails[newI][newJ].f = newF;
                         cellDetails[newI][newJ].g = newG;
@@ -310,7 +312,7 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
-                        openList.insert(make_pair(newF, make_pair(newI, newJ)));
+                        addPPair(&openList, make_pair(newF, make_pair(newI, newJ)));
 
                         cellDetails[newI][newJ].f = newF;
                         cellDetails[newI][newJ].g = newG;
@@ -447,8 +449,71 @@ extern "C"
         tracePath(r, cellDetails, dest);
     }
 
-    bool checkF(cell cellDetails[ROW][COL], int i, int j, double f)
+    bool checkF(cell cellDetails[][COL], int i, int j, double f)
     {
         return cellDetails[i][j].f == FLT_MAX || cellDetails[i][j].f > f;
+    }
+
+    void init(pPair* list)
+    {
+        for (int i = 0; i < COL * ROW; i++)
+        {
+            list[i] = make_pair(-1, make_pair(-1, -1));
+        }
+    }
+
+    bool checkForEmpty(pPair* list)
+    {
+        bool empty = true;
+
+        for (int i = 0; empty && i < COL * ROW; i++)
+        {
+            if (list[i].first != -1)
+            {
+                empty = false;
+                break;
+            }
+        }
+
+        return empty;
+    }
+
+    pPair getNext(pPair* list, int* index)
+    {
+        pPair rtnVal = make_pair(-1, make_pair(-1, -1));
+        *index = 0;
+
+        for (int i = 0; i < COL * ROW; i++)
+        {
+            if (rtnVal.first == -1 || // If no valid value has been grabbed
+                rtnVal.first > list[i].first // Or the list's value is an easier distance
+                )
+            {
+                *index = i;
+                rtnVal = list[i];
+            }
+        }
+
+        return rtnVal;
+    }
+
+    void addPPair(pPair* list, cont pPair& pair)
+    {
+        for (int i = 0; i < COL * ROW; i++)
+        {
+            if (list[i].first == -1)
+            {
+                list[i] = pair;
+                break;
+            }
+        }
+    }
+
+    void removePPair(pPair* list, int index)
+    {
+        if (0 <= index && index < COL * ROW)
+        {
+            list[index] = make_pair(-1, make_pair(-1, -1));
+        }
     }
 }

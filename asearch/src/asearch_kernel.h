@@ -8,7 +8,6 @@
 #define COL 10
 
 #include <utility>
-#include <set>
 #include <cstring>
 #include <iostream>
 #include <math.h>
@@ -56,6 +55,16 @@ extern "C"
     bool checkF(cell cellDetails[][COL], int i, int j, double f);
 
     void asearch(int grid[][COL], Pair src, Pair dest);
+
+    void init(pPair* list);
+
+    bool checkForEmpty(pPair* list);
+
+    pPair getNext(pPair* list, int* index);
+
+    pPair addPPair(pPair* list, const pPair& pair);
+
+    void removePPair(pPair* list, int index);
 }
 
 #endif
