@@ -165,16 +165,17 @@ extern "C"
 
         pPair openList[ROW * COL];
         int index = 0;
-        init(&openList);
+        init(openList);
 
-        addPPair(&openList, make_pair(0.0, make_pair(i, j)));
+        addPPair(openList, make_pair(0.0, make_pair(i, j)));
         bool foundDest = false;
 
-        while (!checkForEmpty(&openList) && !foundDest)
+        while (!checkForEmpty(openList) && !foundDest)
         {
-            pPair p = getNext(&openList, &index);
+            getNext(openList, &index);
+            pPair p = openList[index];
 
-            removePPair(index);
+            removePPair(openList, index);
 
             i = p.second.first;
             j = p.second.second;
@@ -215,7 +216,7 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
-                        addPPair(&openList, make_pair(newF,
+                        addPPair(openList, make_pair(newF,
                             make_pair(newI, newJ)));
 
                         cellDetails[newI][newJ].f = newF;
@@ -248,7 +249,7 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
-                        addPPair(&openList, make_pair(newF,
+                        addPPair(openList, make_pair(newF,
                             make_pair(newI, newJ)));
                         cellDetails[newI][newJ].f = newF;
                         cellDetails[newI][newJ].g = newG;
@@ -280,7 +281,7 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
-                        addPPair(&openList, make_pair(newF, make_pair(newI, newJ)));
+                        addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
 
                         cellDetails[newI][newJ].f = newF;
                         cellDetails[newI][newJ].g = newG;
@@ -312,7 +313,7 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
-                        addPPair(&openList, make_pair(newF, make_pair(newI, newJ)));
+                        addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
 
                         cellDetails[newI][newJ].f = newF;
                         cellDetails[newI][newJ].g = newG;
@@ -478,7 +479,7 @@ extern "C"
         return empty;
     }
 
-    pPair getNext(pPair* list, int* index)
+    void getNext(pPair* list, int* index)
     {
         pPair rtnVal = make_pair(-1, make_pair(-1, -1));
         *index = 0;
@@ -493,11 +494,9 @@ extern "C"
                 rtnVal = list[i];
             }
         }
-
-        return rtnVal;
     }
 
-    void addPPair(pPair* list, cont pPair& pair)
+    void addPPair(pPair* list, const pPair& pair)
     {
         for (int i = 0; i < COL * ROW; i++)
         {

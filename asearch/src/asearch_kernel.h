@@ -60,9 +60,9 @@ extern "C"
 
     bool checkForEmpty(pPair* list);
 
-    pPair getNext(pPair* list, int* index);
+    void getNext(pPair* list, int* index);
 
-    pPair addPPair(pPair* list, const pPair& pair);
+    void addPPair(pPair* list, const pPair& pair);
 
     void removePPair(pPair* list, int index);
 }
