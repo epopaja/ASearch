@@ -29,8 +29,6 @@
 #include "experimental/xrt_device.h"
 #include "experimental/xrt_kernel.h"
 
-#define DATA_SIZE 4096
-
 bool cmpLine(const string& str1, const string& str2);
 void tracePath(result r, cell cellDetails[][COL], Pair dest);
 
@@ -89,7 +87,7 @@ int main(int argc, char** argv)
     printf("Comparing observed against expected data \n");
 
     std::ifstream file_obs, file_exp;
-    file_obs.open("output.dat");
+    file_obs.open("out.dat");
     file_exp.open("out.gold.aStarSearch.dat");
     bool hasDataObs, hasDataExp;
     std::istream_iterator<std::string> iterObs(file_obs);
@@ -99,20 +97,29 @@ int main(int argc, char** argv)
     {
         hasDataExp = iterExp != end;
         hasDataObs = iterObs != end;
-        if (hasDataExp != hasDataObs) // They don't agree on number of line in output
+        if (hasDataExp && !hasDataObs) // They don't agree on number of line in output
         {
             std::cout << "*******************************************" << std::endl;
             std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
-std::cout<<"A"<<std::endl;
+            std::cout << "Expected has data and Observed doesn't" << std::endl;
             std::cout << "*******************************************" << std::endl;
-            return 1;
+            return 2;
+        }
+
+        if (!hasDataExp && hasDataObs) // They don't agree on number of line in output
+        {
+            std::cout << "*******************************************" << std::endl;
+            std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
+            std::cout << "Expected has data and Observed doesn't" << std::endl;
+            std::cout << "*******************************************" << std::endl;
+            return 3;
         }
 
         if (!cmpLine(*iterObs, *iterExp)) // compare the data
         {
             std::cout << "*******************************************" << std::endl;
             std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
-std::cout<<"B"<<std::endl;
+            std::cout << "B" << std::endl;
             std::cout << "*******************************************" << std::endl;
             return 1;
         }
@@ -149,21 +156,20 @@ bool cmpLine(const string& str1, const string& str2)
 
 void tracePath(result r, cell cellDetails[][COL], Pair dest)
 {
-    FILE* pFile;
+    std::ofstream output();
     int row = dest.first;
     int col = dest.second;
 
+    output.open("out.dat", std::ofstream::trunc);
     Pair Path[ROW * COL];
-
-    pFile = fopen("output.dat", "w");
 
     switch (r)
     {
         case FOUND_PATH:
         {
-            fprintf(pFile, "The destination cell is found\r\n\r\n");
+            output << "The destination cell is found" << std::endl << std::endl;
 
-            fprintf(pFile, "The path is \r\n");
+            output << "The path is " << std::endl;
 
             int idx = 0;
             while (!(cellDetails[row][col].parent_i == row &&
@@ -183,27 +189,28 @@ void tracePath(result r, cell cellDetails[][COL], Pair dest)
             for (int i = 0; i < idx; i++)
             {
                 Pair p = Path[idx];
-                fprintf(pFile, "(%d,%d)\r\n", p.first, p.second);
+                output << "(" << p.first << "," << p.second << ")" << endl;
             }
         }
         break;
 
         case INVALID_SOURCE:
-            fprintf(pFile, "Source is invalid");
+            output << "Source is invalid";
             break;
 
         case INVALID_DESTINATION:
-            fprintf(pFile, "Destination is invalid");
+            output << "Destination is invalid";
             break;
 
         case PATH_IS_BLOCKED:
-            fprintf(pFile, "Source or the destination is blocked");
+            output << "Source or the destination is blocked";
             break;
 
         case ALREADY_AT_DESTINATION:
-            fprintf(pFile, "Already at destination");
+            output << "Already at destination";
             break;
     }
 
-    fclose(pFile);
+    output.flush();
+    output.close();
 }
