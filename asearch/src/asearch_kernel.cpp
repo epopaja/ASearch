@@ -7,109 +7,6 @@
 
 extern "C"
 {
-    bool isValid(int row, int col)
-    {
-        return (row >= 0) &&
-            (row < ROW) &&
-            (col >= 0) &&
-            (col < COL);
-    }
-
-    bool isUnBlocked(int grid[][COL], int row, int col)
-    {
-        return grid[row][col] == 1;
-    }
-
-    bool isDestination(int row, int col, Pair dest)
-    {
-        return row == dest.first && col == dest.second;
-    }
-
-    double calculateHValue(int row, int col, Pair dest)
-    {
-        double xDiff = row - dest.first;
-        double yDiff = col - dest.second;
-
-        double sum = (xDiff * xDiff) + (yDiff * yDiff);
-
-        return sqrt(sum);
-    }
-
-    void tracePath(result r, cell cellDetails[][COL], Pair dest)
-    {
-        FILE* pFile;
-        int row = dest.first;
-        int col = dest.second;
-
-        stack<Pair> Path;
-
-        pFile = fopen("output.dat", "w");
-
-        switch (r)
-        {
-            case FOUND_PATH:
-            {
-                fprintf(pFile, "The destination cell is found\r\n\r\n");
-
-                fprintf(pFile, "The path is \r\n");
-
-                while (!(cellDetails[row][col].parent_i == row &&
-                    cellDetails[row][col].parent_j == col))
-                {
-                    Path.push(make_pair(row, col));
-                    int tempRow = cellDetails[row][col].parent_i;
-                    int tempCol = cellDetails[row][col].parent_j;
-                    row = tempRow;
-                    col = tempCol;
-                }
-
-                Path.push(make_pair(row, col));
-                while (!Path.empty())
-                {
-                    pair<int, int> p = Path.top();
-                    Path.pop();
-                    fprintf(pFile, "(%d,%d)\r\n", p.first, p.second);
-                }
-            }
-            break;
-
-            case INVALID_SOURCE:
-                fprintf(pFile, "Source is invalid");
-                break;
-
-            case INVALID_DESTINATION:
-                fprintf(pFile, "Destination is invalid");
-                break;
-
-            case PATH_IS_BLOCKED:
-                fprintf(pFile, "Source or the destination is blocked");
-                break;
-
-            case ALREADY_AT_DESTINATION:
-                fprintf(pFile, "Already at destination");
-                break;
-        }
-
-        fclose(pFile);
-    }
-
-    void readGrid(const char* file, int grid[ROW][COL])
-    {
-        FILE* pFile = fopen(file, "r");
-
-        int val;
-        for (int i = 0; i < ROW; i++)
-        {
-            for (int j = 0; j < COL; j++)
-            {
-                fscanf(pFile, "%i", &val);
-                grid[i][j] = val;
-            }
-        }
-
-        fclose(pFile);
-    }
-
     void asearch(int grid[][COL], Pair src, Pair dest)
     {
         result r = PATH_NOT_FOUND;
@@ -449,70 +346,172 @@ extern "C"
 
         tracePath(r, cellDetails, dest);
     }
+}
+bool isValid(int row, int col)
+{
+    return (row >= 0) &&
+        (row < ROW) &&
+        (col >= 0) &&
+        (col < COL);
+}
 
-    bool checkF(cell cellDetails[][COL], int i, int j, double f)
-    {
-        return cellDetails[i][j].f == FLT_MAX || cellDetails[i][j].f > f;
-    }
+bool isUnBlocked(int grid[][COL], int row, int col)
+{
+    return grid[row][col] == 1;
+}
 
-    void init(pPair* list)
+bool isDestination(int row, int col, Pair dest)
+{
+    return row == dest.first && col == dest.second;
+}
+
+double calculateHValue(int row, int col, Pair dest)
+{
+    double xDiff = row - dest.first;
+    double yDiff = col - dest.second;
+
+    double sum = (xDiff * xDiff) + (yDiff * yDiff);
+
+    return sqrt(sum);
+}
+
+void tracePath(result r, cell cellDetails[][COL], Pair dest)
+{
+    FILE* pFile;
+    int row = dest.first;
+    int col = dest.second;
+
+    stack<Pair> Path;
+
+    pFile = fopen("output.dat", "w");
+
+    switch (r)
     {
-        for (int i = 0; i < COL * ROW; i++)
+        case FOUND_PATH:
         {
-            list[i] = make_pair(-1, make_pair(-1, -1));
-        }
-    }
+            fprintf(pFile, "The destination cell is found\r\n\r\n");
 
-    bool checkForEmpty(pPair* list)
-    {
-        bool empty = true;
+            fprintf(pFile, "The path is \r\n");
 
-        for (int i = 0; empty && i < COL * ROW; i++)
-        {
-            if (list[i].first != -1)
+            while (!(cellDetails[row][col].parent_i == row &&
+                cellDetails[row][col].parent_j == col))
             {
-                empty = false;
-                break;
+                Path.push(make_pair(row, col));
+                int tempRow = cellDetails[row][col].parent_i;
+                int tempCol = cellDetails[row][col].parent_j;
+                row = tempRow;
+                col = tempCol;
+            }
+
+            Path.push(make_pair(row, col));
+            while (!Path.empty())
+            {
+                pair<int, int> p = Path.top();
+                Path.pop();
+                fprintf(pFile, "(%d,%d)\r\n", p.first, p.second);
             }
         }
+        break;
 
-        return empty;
+        case INVALID_SOURCE:
+            fprintf(pFile, "Source is invalid");
+            break;
+
+        case INVALID_DESTINATION:
+            fprintf(pFile, "Destination is invalid");
+            break;
+
+        case PATH_IS_BLOCKED:
+            fprintf(pFile, "Source or the destination is blocked");
+            break;
+
+        case ALREADY_AT_DESTINATION:
+            fprintf(pFile, "Already at destination");
+            break;
     }
 
-    void getNext(pPair* list, int* index)
-    {
-        pPair rtnVal = make_pair(-1, make_pair(-1, -1));
-        *index = 0;
+    fclose(pFile);
+}
 
-        for (int i = 0; i < COL * ROW; i++)
+void readGrid(const char* file, int grid[ROW][COL])
+{
+    FILE* pFile = fopen(file, "r");
+
+    int val;
+    for (int i = 0; i < ROW; i++)
+    {
+        for (int j = 0; j < COL; j++)
         {
-            if (rtnVal.first == -1 || // If no valid value has been grabbed
-                rtnVal.first > list[i].first // Or the list's value is an easier distance
-                )
-            {
-                *index = i;
-                rtnVal = list[i];
-            }
+            fscanf(pFile, "%i", &val);
+            grid[i][j] = val;
         }
     }
 
-    void addPPair(pPair* list, const pPair& pair)
+    fclose(pFile);
+}
+
+bool checkF(cell cellDetails[][COL], int i, int j, double f)
+{
+    return cellDetails[i][j].f == FLT_MAX || cellDetails[i][j].f > f;
+}
+
+void init(pPair* list)
+{
+    for (int i = 0; i < COL * ROW; i++)
     {
-        for (int i = 0; i < COL * ROW; i++)
+        list[i] = make_pair(-1, make_pair(-1, -1));
+    }
+}
+
+bool checkForEmpty(pPair* list)
+{
+    bool empty = true;
+
+    for (int i = 0; empty && i < COL * ROW; i++)
+    {
+        if (list[i].first != -1)
         {
-            if (list[i].first == -1)
-            {
-                list[i] = pair;
-                break;
-            }
+            empty = false;
+            break;
         }
     }
 
-    void removePPair(pPair* list, int index)
+    return empty;
+}
+
+void getNext(pPair* list, int* index)
+{
+    pPair rtnVal = make_pair(-1, make_pair(-1, -1));
+    *index = 0;
+
+    for (int i = 0; i < COL * ROW; i++)
     {
-        if (0 <= index && index < COL * ROW)
+        if (rtnVal.first == -1 || // If no valid value has been grabbed
+            rtnVal.first > list[i].first // Or the list's value is an easier distance
+            )
         {
-            list[index] = make_pair(-1, make_pair(-1, -1));
+            *index = i;
+            rtnVal = list[i];
         }
+    }
+}
+
+void addPPair(pPair* list, const pPair& pair)
+{
+    for (int i = 0; i < COL * ROW; i++)
+    {
+        if (list[i].first == -1)
+        {
+            list[i] = pair;
+            break;
+        }
+    }
+}
+
+void removePPair(pPair* list, int index)
+{
+    if (0 <= index && index < COL * ROW)
+    {
+        list[index] = make_pair(-1, make_pair(-1, -1));
     }
 }
