@@ -346,7 +346,7 @@ extern "C"
                 }
             }
         }
-        printf("Loop Done\n")
+        printf("Loop Done\n");
 
         r = foundDest ? FOUND_PATH : PATH_NOT_FOUND;
         *res = r;
