@@ -84,18 +84,15 @@ int main(int argc, char** argv)
     tracePath(r, details, dest);
 
     // Comparing results with the golden output.
-std::cout << "Comparing observed against expected data" << std::endl;
+    std::cout << "Comparing observed against expected data" << std::endl;
 
     std::ifstream file_obs, file_exp;
     file_obs.open("out.dat");
     file_exp.open("out.gold.aStarSearch.dat");
-    bool hasDataObs, hasDataExp;
-    
-    do
-    {
-        //hasDataExp = iterExp != end;
-        //hasDataObs = iterObs != end;
+    bool hasDataObs = true, hasDataExp = true;
 
+    for (unsigned int i = 1; hasDataObs && hasDataExp; i++)
+    {
         std::string obs, exp;
         std::getline(file_obs, obs);
         hasDataObs = file_obs.eof();
@@ -107,7 +104,7 @@ std::cout << "Comparing observed against expected data" << std::endl;
         {
             std::cout << "*******************************************" << std::endl;
             std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
-            std::cout << "Expected has data and Observed doesn't" << std::endl;
+            std::cout << "Expected has data and Observed doesn't @ " << i << std::endl;
             std::cout << "*******************************************" << std::endl;
             return 2;
         }
@@ -116,24 +113,20 @@ std::cout << "Comparing observed against expected data" << std::endl;
         {
             std::cout << "*******************************************" << std::endl;
             std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
-            std::cout << "Expected has data and Observed doesn't" << std::endl;
+            std::cout << "Observed has data and Expected doesn't @ " << i << std::endl;
             std::cout << "*******************************************" << std::endl;
             return 3;
         }
 
-        if (!cmpLine(*iterObs, *iterExp)) // compare the data
+        if (!cmpLine(obs, exp)) // compare the data
         {
             std::cout << "*******************************************" << std::endl;
             std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
-            std::cout << "EXP: \"" << *iterExp << "\"" << std::endl;
-            std::cout << "OBS: \"" << *iterObs << "\"" << std::endl;
+            std::cout << "EXP: \"" << exp << "\"" << std::endl;
+            std::cout << "OBS: \"" << obs << "\"" << std::endl;
             std::cout << "*******************************************" << std::endl;
             return 1;
         }
-
-        // Move to next line
-        iterObs++;
-        iterExp++;
 
     } while (hasDataObs && hasDataExp);
 
