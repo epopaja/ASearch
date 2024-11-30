@@ -22,6 +22,7 @@
 #include <iostream>
 #include <stdlib.h> // for system()
 #include <string>
+#include <iterator>
 
  // XRT includes
 #include "experimental/xrt_bo.h"
@@ -84,21 +85,32 @@ int main(int argc, char** argv)
     std::ifstream file_obs, file_exp;
     file_obs.open("out.dat");
     file_exp.open("out.gold.aStarSearch.dat");
-    std::string observed, expected;
-    bool hasDataObs, hasDataExp;
+    std::istream_iterator<std::string> iterObs(file_obs);
+    std::istream_iterator<std::string> iterExp(file_exp);
+    std::istream_iterator<std::string> end;
     do
     {
-        hasDataObs = std::getline(file_obs, observed);
-        hasDataExp = std::getline(file_exp, expected);
-
-        if (hasDataObs != hasDataExp || // Make sure both agree if there should be more data
-            (hasDataExp && hasDataObs && !cmpLine(observed, expected))) // If both have data but don't match
+        if (iterObs == end ||
+            iterExp == end)
         {
             std::cout << "*******************************************" << std::endl;
             std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
             std::cout << "*******************************************" << std::endl;
             return 1;
         }
+
+        if (!cmpLine(*iterObs, *iterExp)) // compare the data
+        {
+            std::cout << "*******************************************" << std::endl;
+            std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
+            std::cout << "*******************************************" << std::endl;
+            return 1;
+        }
+
+        // Move to next line
+        iterObs++;
+        iterExp++;
+
     } while (hasDataObs && hasDataExp);
 
     std::cout << "*******************************************" << std::endl;
