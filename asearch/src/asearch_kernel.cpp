@@ -381,7 +381,7 @@ void tracePath(result r, cell cellDetails[][COL], Pair dest)
     int row = dest.first;
     int col = dest.second;
 
-    stack<Pair> Path;
+    Pair Path[ROW * COL];
 
     pFile = fopen("output.dat", "w");
 
@@ -393,21 +393,24 @@ void tracePath(result r, cell cellDetails[][COL], Pair dest)
 
             fprintf(pFile, "The path is \r\n");
 
+            int idx = 0;
             while (!(cellDetails[row][col].parent_i == row &&
                 cellDetails[row][col].parent_j == col))
             {
-                Path.push(make_pair(row, col));
+                Path[idx] = make_pair(row, col);
+                idx++;
                 int tempRow = cellDetails[row][col].parent_i;
                 int tempCol = cellDetails[row][col].parent_j;
                 row = tempRow;
                 col = tempCol;
             }
 
-            Path.push(make_pair(row, col));
-            while (!Path.empty())
+
+            Path[idx] = make_pair(row, col);
+            idx++;
+            for (int i = 0; i < idx; i++)
             {
-                pair<int, int> p = Path.top();
-                Path.pop();
+                Pair p = Path[idx];
                 fprintf(pFile, "(%d,%d)\r\n", p.first, p.second);
             }
         }
