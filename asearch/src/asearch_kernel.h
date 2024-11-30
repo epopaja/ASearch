@@ -33,15 +33,16 @@ extern "C"
 
     typedef pair<double, pair<int, int>> pPair;
 
-    void asearch(int grid[][COL], Pair src, Pair dest);
+    struct cell
+    {
+        int parent_i, parent_j;
+
+        double f, g, h;
+    };
+
+    void asearch(int grid[][COL], Pair src, Pair dest, result* r, cell cellDetails[][COL]);
 }
 
-struct cell
-{
-    int parent_i, parent_j;
-
-    double f, g, h;
-};
 
 bool isValid(int row, int col);
 

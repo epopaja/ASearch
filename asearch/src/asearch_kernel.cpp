@@ -7,7 +7,7 @@
 
 extern "C"
 {
-    void asearch(int grid[][COL], Pair src, Pair dest)
+    void asearch(int grid[][COL], Pair src, Pair dest, result* r, cell cellDetails[][COL])
     {
         result r = PATH_NOT_FOUND;
 
@@ -36,7 +36,7 @@ extern "C"
         bool closedList[ROW][COL];
         memset(closedList, false, sizeof(closedList));
 
-        cell cellDetails[ROW][COL];
+        //cell cellDetails[ROW][COL];
         int i, j, newI, newJ;
 
         for (i = 0; i < ROW; i++)
@@ -344,9 +344,10 @@ extern "C"
 
         r = foundDest ? FOUND_PATH : PATH_NOT_FOUND;
 
-        tracePath(r, cellDetails, dest);
+        //tracePath(r, cellDetails, dest);
     }
 }
+
 bool isValid(int row, int col)
 {
     return (row >= 0) &&
