@@ -61,12 +61,23 @@ int main(int argc, char** argv)
 
     auto krnl = xrt::kernel(device, uuid, "asearch");
 
-    int grid[ROW][COL];
+    int grid[ROW][COL] = 
+    {
+    {1,0,1,1,1,1,0,1,1,1},
+    {1,1,1,0,1,1,1,0,1,1},
+    {1,1,1,0,1,1,0,1,0,1},
+    {0,0,1,0,1,0,0,0,0,1},
+    {1,1,1,0,1,1,1,0,1,0},
+    {1,0,1,1,1,1,0,1,0,0},
+    {1,0,1,1,1,1,0,1,1,1},
+    {1,1,1,0,0,0,1,0,0,1}
+    };
+
     Pair src = make_pair(8, 0);
     Pair dest = make_pair(0, 0);
     result r = result::PATH_NOT_FOUND;
-    cell details[ROW][COl];
-    readGrid("input.dat", grid);
+    cell details[ROW][COL];
+    // readGrid("input.dat", grid);
 
     std::cout << "Execution of the kernel\n";
     auto run = krnl(grid, src, dest, &r, details);

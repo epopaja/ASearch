@@ -437,7 +437,7 @@ void tracePath(result r, cell cellDetails[][COL], Pair dest)
     fclose(pFile);
 }
 
-void readGrid(const char* file, int grid[ROW][COL])
+void readGrid(const char* file, int grid[][COL])
 {
     FILE* pFile = fopen(file, "r");
 

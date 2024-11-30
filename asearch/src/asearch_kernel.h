@@ -54,7 +54,7 @@ double calculateHValue(int row, int col, Pair dest);
 
 void tracePath(result r, cell cellDetails[][COL], Pair dest);
 
-void readGrid(const char* file, int grid[ROW][COL]);
+void readGrid(const char* file, int grid[][COL]);
 
 bool checkF(cell cellDetails[][COL], int i, int j, double f);
 
