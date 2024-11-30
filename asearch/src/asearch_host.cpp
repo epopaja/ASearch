@@ -77,14 +77,14 @@ int main(int argc, char** argv)
     result r = result::PATH_NOT_FOUND;
     cell details[ROW][COL];
 
-    std::cout << "Execution of the kernel\n";
+    std::cout << "Execution of the kernel" << std::endl;
     auto run = krnl(grid, src, dest, &r, details);
     run.wait();
 
     tracePath(r, details, dest);
 
     // Comparing results with the golden output.
-    printf("Comparing observed against expected data \n");
+std::cout << "Comparing observed against expected data" << std::endl;
 
     std::ifstream file_obs, file_exp;
     file_obs.open("out.dat");
@@ -119,7 +119,8 @@ int main(int argc, char** argv)
         {
             std::cout << "*******************************************" << std::endl;
             std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
-            std::cout << "B" << std::endl;
+            std::cout << "EXP: \"" << *iterExp << "\"" << std::endl;
+            std::cout << "OBS: \"" << *iterObs << "\"" << std::endl;
             std::cout << "*******************************************" << std::endl;
             return 1;
         }
@@ -156,7 +157,9 @@ bool cmpLine(const string& str1, const string& str2)
 
 void tracePath(result r, cell cellDetails[][COL], Pair dest)
 {
-    std::ofstream output();
+    std::cout << "Result: " << r  << endl;
+//    std::cout << "Dest: " << dest << endl;
+    std::ofstream output;
     int row = dest.first;
     int col = dest.second;
 
@@ -209,6 +212,10 @@ void tracePath(result r, cell cellDetails[][COL], Pair dest)
         case ALREADY_AT_DESTINATION:
             output << "Already at destination";
             break;
+
+        case PATH_NOT_FOUND:
+             output << "Path was not found";
+             break;
     }
 
     output.flush();
