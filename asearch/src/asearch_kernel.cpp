@@ -34,7 +34,7 @@ extern "C"
             r = ALREADY_AT_DESTINATION;
         }
 
-        printf("Doing initialization");
+        printf("Doing initialization\n");
 
         // Create and populate closed list
         bool closedList[ROW][COL];
@@ -71,7 +71,7 @@ extern "C"
         addPPair(openList, make_pair(0.0, make_pair(i, j)));
         bool foundDest = false;
 
-        printf("Loop Starting");
+        printf("Loop Starting\n");
         while (!checkForEmpty(openList) && !foundDest)
         {
             getNext(openList, &index);
