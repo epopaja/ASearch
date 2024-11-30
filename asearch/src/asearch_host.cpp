@@ -32,6 +32,7 @@
 #define DATA_SIZE 4096
 
 bool cmpLine(const string& str1, const string& str2);
+void tracePath(result r, cell cellDetails[][COL], Pair dest);
 
 int main(int argc, char** argv)
 {
@@ -61,28 +62,28 @@ int main(int argc, char** argv)
 
     auto krnl = xrt::kernel(device, uuid, "asearch");
 
-    int grid[ROW][COL] = 
+    int grid[ROW][COL] =
     {
-    {1,0,1,1,1,1,0,1,1,1},
-    {1,1,1,0,1,1,1,0,1,1},
-    {1,1,1,0,1,1,0,1,0,1},
-    {0,0,1,0,1,0,0,0,0,1},
-    {1,1,1,0,1,1,1,0,1,0},
-    {1,0,1,1,1,1,0,1,0,0},
-    {1,0,1,1,1,1,0,1,1,1},
-    {1,1,1,0,0,0,1,0,0,1}
+        {1,0,1,1,1,1,0,1,1,1},
+        {1,1,1,0,1,1,1,0,1,1},
+        {1,1,1,0,1,1,0,1,0,1},
+        {0,0,1,0,1,0,0,0,0,1},
+        {1,1,1,0,1,1,1,0,1,0},
+        {1,0,1,1,1,1,0,1,0,0},
+        {1,0,1,1,1,1,0,1,1,1},
+        {1,1,1,0,0,0,1,0,0,1}
     };
 
     Pair src = make_pair(8, 0);
     Pair dest = make_pair(0, 0);
     result r = result::PATH_NOT_FOUND;
     cell details[ROW][COL];
-    // readGrid("input.dat", grid);
 
     std::cout << "Execution of the kernel\n";
     auto run = krnl(grid, src, dest, &r, details);
     run.wait();
 
+    tracePath(r, details, dest);
 
     // Comparing results with the golden output.
     printf("Comparing observed against expected data \n");
@@ -142,4 +143,65 @@ bool cmpLine(const string& str1, const string& str2)
     }
 
     return match;
+}
+
+void tracePath(result r, cell cellDetails[][COL], Pair dest)
+{
+    FILE* pFile;
+    int row = dest.first;
+    int col = dest.second;
+
+    Pair Path[ROW * COL];
+
+    pFile = fopen("output.dat", "w");
+
+    switch (r)
+    {
+        case FOUND_PATH:
+        {
+            fprintf(pFile, "The destination cell is found\r\n\r\n");
+
+            fprintf(pFile, "The path is \r\n");
+
+            int idx = 0;
+            while (!(cellDetails[row][col].parent_i == row &&
+                cellDetails[row][col].parent_j == col))
+            {
+                Path[idx] = make_pair(row, col);
+                idx++;
+                int tempRow = cellDetails[row][col].parent_i;
+                int tempCol = cellDetails[row][col].parent_j;
+                row = tempRow;
+                col = tempCol;
+            }
+
+
+            Path[idx] = make_pair(row, col);
+            idx++;
+            for (int i = 0; i < idx; i++)
+            {
+                Pair p = Path[idx];
+                fprintf(pFile, "(%d,%d)\r\n", p.first, p.second);
+            }
+        }
+        break;
+
+        case INVALID_SOURCE:
+            fprintf(pFile, "Source is invalid");
+            break;
+
+        case INVALID_DESTINATION:
+            fprintf(pFile, "Destination is invalid");
+            break;
+
+        case PATH_IS_BLOCKED:
+            fprintf(pFile, "Source or the destination is blocked");
+            break;
+
+        case ALREADY_AT_DESTINATION:
+            fprintf(pFile, "Already at destination");
+            break;
+    }
+
+    fclose(pFile);
 }

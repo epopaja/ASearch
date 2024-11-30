@@ -52,7 +52,7 @@ bool isDestination(int row, int col, Pair dest);
 
 double calculateHValue(int row, int col, Pair dest);
 
-void tracePath(result r, cell cellDetails[][COL], Pair dest);
+//void tracePath(result r, cell cellDetails[][COL], Pair dest);
 
 void readGrid(const char* file, int grid[][COL]);
 
