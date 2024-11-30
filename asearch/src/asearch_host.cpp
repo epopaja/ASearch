@@ -89,7 +89,7 @@ int main(int argc, char** argv)
     printf("Comparing observed against expected data \n");
 
     std::ifstream file_obs, file_exp;
-    file_obs.open("out.dat");
+    file_obs.open("output.dat");
     file_exp.open("out.gold.aStarSearch.dat");
     bool hasDataObs, hasDataExp;
     std::istream_iterator<std::string> iterObs(file_obs);
@@ -103,6 +103,7 @@ int main(int argc, char** argv)
         {
             std::cout << "*******************************************" << std::endl;
             std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
+std::cout<<"A"<<std::endl;
             std::cout << "*******************************************" << std::endl;
             return 1;
         }
@@ -111,6 +112,7 @@ int main(int argc, char** argv)
         {
             std::cout << "*******************************************" << std::endl;
             std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
+std::cout<<"B"<<std::endl;
             std::cout << "*******************************************" << std::endl;
             return 1;
         }
