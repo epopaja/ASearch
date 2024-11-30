@@ -11,6 +11,8 @@ extern "C"
     {
         result r = PATH_NOT_FOUND;
 
+        printf("Pre-Check\n");
+
         if (!isValid(src.first, src.second))
         {
             r = INVALID_SOURCE;
@@ -32,11 +34,12 @@ extern "C"
             r = ALREADY_AT_DESTINATION;
         }
 
+        printf("Doing initialization");
+
         // Create and populate closed list
         bool closedList[ROW][COL];
         memset(closedList, false, sizeof(closedList));
 
-        //cell cellDetails[ROW][COL];
         int i, j, newI, newJ;
 
         for (i = 0; i < ROW; i++)
@@ -51,6 +54,7 @@ extern "C"
             }
         }
 
+        printf("Selecting first node\n");
         // Set starting node
         i = src.first;
         j = src.second;
@@ -67,6 +71,7 @@ extern "C"
         addPPair(openList, make_pair(0.0, make_pair(i, j)));
         bool foundDest = false;
 
+        printf("Loop Starting");
         while (!checkForEmpty(openList) && !foundDest)
         {
             getNext(openList, &index);
@@ -341,9 +346,10 @@ extern "C"
                 }
             }
         }
+        printf("Loop Done\n")
 
         r = foundDest ? FOUND_PATH : PATH_NOT_FOUND;
-	*res = r;
+        *res = r;
         //tracePath(r, cellDetails, dest);
     }
 }
