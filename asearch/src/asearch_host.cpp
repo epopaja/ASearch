@@ -90,13 +90,19 @@ std::cout << "Comparing observed against expected data" << std::endl;
     file_obs.open("out.dat");
     file_exp.open("out.gold.aStarSearch.dat");
     bool hasDataObs, hasDataExp;
-    std::istream_iterator<std::string> iterObs(file_obs);
-    std::istream_iterator<std::string> iterExp(file_exp);
-    std::istream_iterator<std::string> end;
+    
     do
     {
-        hasDataExp = iterExp != end;
-        hasDataObs = iterObs != end;
+        //hasDataExp = iterExp != end;
+        //hasDataObs = iterObs != end;
+
+        std::string obs, exp;
+        std::getline(file_obs, obs);
+        hasDataObs = file_obs.eof();
+
+        std::getline(file_exp, exp);
+        hasDataExp = file_exp.eof();
+
         if (hasDataExp && !hasDataObs) // They don't agree on number of line in output
         {
             std::cout << "*******************************************" << std::endl;
