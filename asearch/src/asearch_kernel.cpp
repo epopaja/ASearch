@@ -7,7 +7,7 @@
 
 extern "C"
 {
-    void asearch(int grid[][COL], Pair src, Pair dest, result* r, cell cellDetails[][COL])
+    void asearch(int grid[][COL], Pair src, Pair dest, result* res, cell cellDetails[][COL])
     {
         result r = PATH_NOT_FOUND;
 
@@ -343,7 +343,7 @@ extern "C"
         }
 
         r = foundDest ? FOUND_PATH : PATH_NOT_FOUND;
-
+	*res = r;
         //tracePath(r, cellDetails, dest);
     }
 }
