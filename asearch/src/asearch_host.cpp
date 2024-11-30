@@ -61,17 +61,11 @@ int main(int argc, char** argv)
 
     auto krnl = xrt::kernel(device, uuid, "asearch");
 
-    std::cout << "Allocate Small Buffer For Input in Device Memory\n";
-    auto bo_out = xrt::bo(device, 128, krnl.group_id(0));
-
-    // Map the contents of the buffer object into host memory
-    auto bo_out_map = bo_out.map<int*>();
-
-    int grid[COL][ROW];
+    int grid[ROW][COL];
     Pair src = make_pair(8, 0);
     Pair dest = make_pair(0, 0);
     result r = result::PATH_NOT_FOUND;
-    cell details[ROW][COL];
+    cell details[ROW][COl];
     readGrid("input.dat", grid);
 
     std::cout << "Execution of the kernel\n";
@@ -85,13 +79,15 @@ int main(int argc, char** argv)
     std::ifstream file_obs, file_exp;
     file_obs.open("out.dat");
     file_exp.open("out.gold.aStarSearch.dat");
+    bool hasDataObs, hasDataExp;
     std::istream_iterator<std::string> iterObs(file_obs);
     std::istream_iterator<std::string> iterExp(file_exp);
     std::istream_iterator<std::string> end;
     do
     {
-        if (iterObs == end ||
-            iterExp == end)
+        hasDataExp = iterExp != end;
+        hasDataObs = iterObs != end;
+        if (hasDataExp != hasDataObs) // They don't agree on number of line in output
         {
             std::cout << "*******************************************" << std::endl;
             std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
@@ -123,9 +119,8 @@ int main(int argc, char** argv)
 bool cmpLine(const string& str1, const string& str2)
 {
     bool match = true;
-    int i;
 
-    for (i = 0; match && i < str1.length() && i < str2.length(); i++)
+    for (std::size_t i = 0; match && i < str1.length() && i < str2.length(); i++)
     {
         match &= str1.at(i) == str2.at(i);
     }
