@@ -76,6 +76,13 @@ int main(int argc, char** argv)
     Pair dest = make_pair(0, 0);
     result r = result::PATH_NOT_FOUND;
     cell details[ROW][COL];
+    for (int i = 0; i < ROW; i++)
+    {
+       for(int j=0; j<COL; j++)
+       {
+         details[i][j]=cell();
+       }
+    }
 
     std::cout << "Execution of the kernel" << std::endl;
     auto run = krnl(grid, src, dest, &r, details);

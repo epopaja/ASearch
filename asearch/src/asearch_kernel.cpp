@@ -356,6 +356,15 @@ extern "C"
         }
         printf("Loop Done\n");
 
+        printf("Closed Loop\n");
+        for (int x = 0; x < ROW; x++)
+        {
+            for (int y = 0; y < COL; y++)
+            {
+              printf("closedList[%d][%d] = %d\n", x, y, closedList[x][y]);
+            }
+        }
+
         r = foundDest ? FOUND_PATH : PATH_NOT_FOUND;
         *res = r;
         //tracePath(r, cellDetails, dest);
