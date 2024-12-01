@@ -1,61 +1,186 @@
 /*
-	Filename: fir_test.h
-		FIR lab wirtten for WES/CSE237C class at UCSD.
-		Testbench file
-		Calls fir() function from fir.cpp
-		Compares the output from fir() with out.gold.dat
+    Filename: fir_test.h
+        FIR lab wirtten for WES/CSE237C class at UCSD.
+        Testbench file
+        Calls fir() function from fir.cpp
+        Compares the output from fir() with out.gold.dat
 */
 
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include "asearch_kernel.h"
-//#include <iostream>
+#include <iostream>
 #include <fstream>
+#include <string>
 
-int main () {
-  const int    SAMPLES=600;
-  FILE         *fp, *fin;
+bool cmpLine(const string& str1, const string& str2);
+void tracePath(result r, cell cellDetails[][COL], Pair dest);
 
-  data_t signal, output;
-  int i;
-  signal = 0;
+int main()
+{
+    int grid[ROW][COL] =
+    {
+        {1,0,1,1,1,1,0,1,1,1},
+        {1,1,1,0,1,1,1,0,1,1},
+        {1,1,1,0,1,1,0,1,0,1},
+        {0,0,1,0,1,0,0,0,0,1},
+        {1,1,1,0,1,1,1,0,1,0},
+        {1,0,1,1,1,1,0,1,0,0},
+        {1,0,1,1,1,1,0,1,1,1},
+        {1,1,1,0,0,0,1,0,0,1}
+    };
 
-  //fin=fopen("input.dat","r");
-  std::ifstream file_in;
-  std::ofstream file_out;
-  file_in.open("input.dat");
-  file_out.open("out.dat");
-
-  for (i=0;i<SAMPLES;i++) {  
-
-	//read in signal
-    file_in >> signal;
-	//Call the HLS block
-    asearch(&output,signal);
-    // Save the results.
-    file_out << output << std::endl;
-    
-    printf("%i %d %d\n",i,signal,output);
-  }
-
-  file_in.close();
-  file_out.close();
-
-
-  //Comparing results with the golden output.
-  printf ("Comparing against output data \n");
-    if (system("diff -w out.dat out.gold.fir11.dat")) {
-  	fprintf(stdout, "*******************************************\n");
-  	fprintf(stdout, "FAIL: Output DOES NOT match the golden output\n");
-  	fprintf(stdout, "*******************************************\n");
-       return 1;
-    } else {
-  	fprintf(stdout, "*******************************************\n");
-  	fprintf(stdout, "PASS: The output matches the golden output!\n");
-  	fprintf(stdout, "*******************************************\n");
-       return 0;
+    Pair src = make_pair(8, 0);
+    Pair dest = make_pair(0, 0);
+    result r = result::PATH_NOT_FOUND;
+    cell details[ROW][COL];
+    for (int i = 0; i < ROW; i++)
+    {
+        for (int j = 0; j < COL; j++)
+        {
+            details[i][j] = cell();
+        }
     }
 
+    std::cout << "Execution of the kernel" << std::endl;
+    asearch(grid, src, dest, &r, details);
+
+
+    tracePath(r, details, dest);
+
+    std::cout << "Comparing observed against expected data" << std::endl;
+
+    std::ifstream file_obs, file_exp;
+    file_obs.open("out.dat");
+    file_exp.open("out.gold.aStarSearch.dat");
+    bool hasDataObs = true, hasDataExp = true;
+
+    for (unsigned int i = 1; hasDataObs && hasDataExp; i++)
+    {
+        std::string obs, exp;
+        std::getline(file_obs, obs);
+        hasDataObs = file_obs.eof();
+
+        std::getline(file_exp, exp);
+        hasDataExp = file_exp.eof();
+
+        if (hasDataExp && !hasDataObs) // They don't agree on number of line in output
+        {
+            std::cout << "*******************************************" << std::endl;
+            std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
+            std::cout << "Expected has data and Observed doesn't @ " << i << std::endl;
+            std::cout << "*******************************************" << std::endl;
+            return 2;
+        }
+
+        if (!hasDataExp && hasDataObs) // They don't agree on number of line in output
+        {
+            std::cout << "*******************************************" << std::endl;
+            std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
+            std::cout << "Observed has data and Expected doesn't @ " << i << std::endl;
+            std::cout << "*******************************************" << std::endl;
+            return 3;
+        }
+
+        if (!cmpLine(obs, exp)) // compare the data
+        {
+            std::cout << "*******************************************" << std::endl;
+            std::cout << "FAIL: Output DOES NOT match the golden output" << std::endl;
+            std::cout << "EXP: \"" << exp << "\"" << std::endl;
+            std::cout << "OBS: \"" << obs << "\"" << std::endl;
+            std::cout << "*******************************************" << std::endl;
+            return 1;
+        }
+
+    } while (hasDataObs && hasDataExp);
+
+    std::cout << "*******************************************" << std::endl;
+    std::cout << "PASS: The output matches the golden output" << std::endl;
+    std::cout << "*******************************************" << std::endl;
+
+    return 0;
 }
 
+bool cmpLine(const string& str1, const string& str2)
+{
+    bool match = true;
+
+    for (std::size_t i = 0; match && i < str1.length() && i < str2.length(); i++)
+    {
+        match &= str1.at(i) == str2.at(i);
+    }
+
+    if (match)
+    {
+        match = str1.length() == str2.length();
+    }
+
+    return match;
+}
+
+void tracePath(result r, cell cellDetails[][COL], Pair dest)
+{
+    std::cout << "Result: " << r << endl;
+    //    std::cout << "Dest: " << dest << endl;
+    std::ofstream output;
+    int row = dest.first;
+    int col = dest.second;
+
+    output.open("out.dat", std::ofstream::trunc);
+    Pair Path[ROW * COL];
+
+    switch (r)
+    {
+        case FOUND_PATH:
+        {
+            output << "The destination cell is found" << std::endl << std::endl;
+
+            output << "The Path is " << std::endl;
+
+            int idx = 0;
+            while (!(cellDetails[row][col].parent_i == row &&
+                cellDetails[row][col].parent_j == col))
+            {
+                Path[idx] = make_pair(row, col);
+                idx++;
+                int tempRow = cellDetails[row][col].parent_i;
+                int tempCol = cellDetails[row][col].parent_j;
+                row = tempRow;
+                col = tempCol;
+            }
+
+
+            Path[idx] = make_pair(row, col);
+            for (int i = idx; i << idx >= 0; i--)
+            {
+                Pair p = Path[i];
+                output << "(" << p.first << "," << p.second << ")" << endl;
+            }
+        }
+        break;
+
+        case INVALID_SOURCE:
+            output << "Source is invalid";
+            break;
+
+        case INVALID_DESTINATION:
+            output << "Destination is invalid";
+            break;
+
+        case PATH_IS_BLOCKED:
+            output << "Source or the destination is blocked";
+            break;
+
+        case ALREADY_AT_DESTINATION:
+            output << "Already at destination";
+            break;
+
+        case PATH_NOT_FOUND:
+            output << "Path was not found";
+            break;
+    }
+
+    output.flush();
+    output.close();
+}
