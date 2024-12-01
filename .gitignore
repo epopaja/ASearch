@@ -11,3 +11,6 @@ asearch/asearch_xrt
 
 #Visual Studio Ignores
 .vs/
+
+#Excel working file
+~$*.xlsm
