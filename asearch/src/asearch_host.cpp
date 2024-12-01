@@ -95,10 +95,8 @@ int main(int argc, char** argv)
     {
         std::string obs, exp;
         std::getline(file_obs, obs);
-        hasDataObs = file_obs.eof();
 
         std::getline(file_exp, exp);
-        hasDataExp = file_exp.eof();
 
         if (hasDataExp && !hasDataObs) // They don't agree on number of line in output
         {
@@ -128,6 +126,8 @@ int main(int argc, char** argv)
             return 1;
         }
 
+        hasDataObs = file_obs.eof();
+        hasDataExp = file_exp.eof();
     } while (hasDataObs && hasDataExp);
 
     std::cout << "*******************************************" << std::endl;
