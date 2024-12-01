@@ -40,7 +40,7 @@ extern "C"
         double f, g, h;
     };
 
-    void asearch(int grid[][COL], Pair src, Pair dest, result* r, cell cellDetails[][COL]);
+    void asearch(int grid[], Pair src, Pair dest, result* r, cell cellDetails[]);
 }
 
 

@@ -7,8 +7,17 @@
 
 extern "C"
 {
-    void asearch(int grid[][COL], Pair src, Pair dest, result* res, cell cellDetails[][COL])
+    void asearch(int gridIn[], Pair src, Pair dest, result* res, cell cellOut[])
     {
+        int grid[ROW][COL];
+        for (int x = 0; x < ROW; x++)
+        {
+            for (int y = 0; y < COL; y++)
+            {
+                grid[x][y] = gridIn[x * COL + y];
+            }
+        }
+
         result r = PATH_NOT_FOUND;
 
         printf("Pre-Check\n");
@@ -51,10 +60,12 @@ extern "C"
 
         int i, j, newI, newJ;
 
+        cell cellDetails[ROW][COL];
         for (i = 0; i < ROW; i++)
         {
             for (j = 0; j < COL; j++)
             {
+                cellDetails[i][j] = cell();
                 cellDetails[i][j].f = FLT_MAX;
                 cellDetails[i][j].g = FLT_MAX;
                 cellDetails[i][j].h = FLT_MAX;
@@ -374,9 +385,16 @@ extern "C"
             }
         }
 
+        for (int x = 0; x < ROW; x++)
+        {
+            for (int y = 0; y < COL; y++)
+            {
+                cellOut[x * COL + y] = cellDetails[x][y];
+            }
+        }
+
         r = foundDest ? FOUND_PATH : PATH_NOT_FOUND;
         *res = r;
-        //tracePath(r, cellDetails, dest);
     }
 }
 

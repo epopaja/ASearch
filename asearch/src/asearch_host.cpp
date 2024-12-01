@@ -71,22 +71,33 @@ int main(int argc, char** argv)
         {1,0,1,1,1,1,0,1,1,1},
         {1,1,1,0,0,0,1,0,0,1}
     };
+    int gridIn[ROW * COL];
+    cell detailsOut[ROW * COL];
 
     Pair src = make_pair(8, 0);
     Pair dest = make_pair(0, 0);
     result r = result::PATH_NOT_FOUND;
+    for (int i = 0; i < ROW; i++)
+    {
+        for (int j = 0; j < COL; j++)
+        {
+            gridIn[i * COL + j] = grid[i][j];
+            detailsOut[i * COL + j] = cell();
+        }
+    }
+
+    std::cout << "Execution of the kernel" << std::endl;
+    auto run = krnl(gridIn, src, dest, &r, detailsOut);
+    run.wait();
+
     cell details[ROW][COL];
     for (int i = 0; i < ROW; i++)
     {
         for (int j = 0; j < COL; j++)
         {
-            details[i][j] = cell();
+            details[i][j] = detailsOut[i * COL + j];
         }
     }
-
-    std::cout << "Execution of the kernel" << std::endl;
-    auto run = krnl(grid, src, dest, &r, details);
-    run.wait();
 
     tracePath(r, details, dest);
 

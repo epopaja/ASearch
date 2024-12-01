@@ -31,21 +31,32 @@ int main()
         {1,1,1,0,0,0,1,0,0,1}
     };
 
+    int gridIn[ROW * COL];
     Pair src = make_pair(8, 0);
     Pair dest = make_pair(0, 0);
     result r = result::PATH_NOT_FOUND;
+    cell detailsOut[ROW * COL];
+
+    for (int i = 0; i < ROW; i++)
+    {
+        for (int j = 0; j < COL; j++)
+        {
+            gridIn[i * COL + j] = grid[i][j];
+            detailsOut[i * COL + j] = cell();
+        }
+    }
+
+    std::cout << "Execution of the kernel" << std::endl;
+    asearch(gridIn, src, dest, &r, detailsOut);
+
     cell details[ROW][COL];
     for (int i = 0; i < ROW; i++)
     {
         for (int j = 0; j < COL; j++)
         {
-            details[i][j] = cell();
+            details[i][j] = detailsOut[i * COL + j];
         }
     }
-
-    std::cout << "Execution of the kernel" << std::endl;
-    asearch(grid, src, dest, &r, details);
-
 
     tracePath(r, details, dest);
 
@@ -54,17 +65,12 @@ int main()
     std::ifstream file_obs, file_exp;
     file_obs.open("out.dat");
     file_exp.open("out.gold.aStarSearch.dat");
-    bool hasDataObs = true, hasDataExp = true;
+    bool hasDataObs = file_obs.eof();
+    bool hasDataExp = file_exp.eof();
 
-    for (unsigned int i = 1; hasDataObs && hasDataExp; i++)
+    std::string obs, exp;
+    for (unsigned int i = 1; hasDataObs || hasDataExp; i++)
     {
-        std::string obs, exp;
-        std::getline(file_obs, obs);
-        hasDataObs = file_obs.eof();
-
-        std::getline(file_exp, exp);
-        hasDataExp = file_exp.eof();
-
         if (hasDataExp && !hasDataObs) // They don't agree on number of line in output
         {
             std::cout << "*******************************************" << std::endl;
@@ -83,6 +89,10 @@ int main()
             return 3;
         }
 
+        std::getline(file_obs, obs);
+
+        std::getline(file_exp, exp);
+
         if (!cmpLine(obs, exp)) // compare the data
         {
             std::cout << "*******************************************" << std::endl;
@@ -93,6 +103,8 @@ int main()
             return 1;
         }
 
+        hasDataObs = file_obs.eof();
+        hasDataExp = file_exp.eof();
     } while (hasDataObs && hasDataExp);
 
     std::cout << "*******************************************" << std::endl;
