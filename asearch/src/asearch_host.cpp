@@ -71,9 +71,11 @@ int main(int argc, char** argv)
         {1,0,1,1,1,1,0,1,1,1},
         {1,1,1,0,0,0,1,0,0,1}
     };
-    int gridIn[ROW * COL];
-    cell detailsOut[ROW * COL];
+    auto gridIn = xrt::b0(device, ROW * COL * sizeof(int), krnl.gropu_id(0));
+    auto detailsOut = xrt::b0(device, ROW * COL * sizeof(cell), krnl.group_id(4));
 
+    auto gridIn_map = gridIn.map<int*>();
+    auto detailsOut_map = detailsOut.map<cell*>();
     Pair src = make_pair(8, 0);
     Pair dest = make_pair(0, 0);
     result r = result::PATH_NOT_FOUND;
@@ -81,21 +83,29 @@ int main(int argc, char** argv)
     {
         for (int j = 0; j < COL; j++)
         {
-            gridIn[i * COL + j] = grid[i][j];
-            detailsOut[i * COL + j] = cell();
+            gridIn_map[i * COL + j] = grid[i][j];
+            detailsOut_map[i * COL + j] = cell();
         }
     }
+
+    std::cout << "Synchronize Data In" << std::endl;
+    gridIn.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+    detailsOut.sync(XCL_BO_SYNC_BO_TO_DEVICE);
 
     std::cout << "Execution of the kernel" << std::endl;
     auto run = krnl(gridIn, src, dest, &r, detailsOut);
     run.wait();
 
+    std::cout << "Synchronize Data Out" << std::endl;
+    detailsOut.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+
+    // Transpose to multi dimension array
     cell details[ROW][COL];
     for (int i = 0; i < ROW; i++)
     {
         for (int j = 0; j < COL; j++)
         {
-            details[i][j] = detailsOut[i * COL + j];
+            details[i][j] = detailsOut_map[i * COL + j];
         }
     }
 
