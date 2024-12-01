@@ -156,8 +156,8 @@ bool cmpLine(const string& str1, const string& str2)
 
 void tracePath(result r, cell cellDetails[][COL], Pair dest)
 {
-    std::cout << "Result: " << r  << endl;
-//    std::cout << "Dest: " << dest << endl;
+    std::cout << "Result: " << r << endl;
+    //    std::cout << "Dest: " << dest << endl;
     std::ofstream output;
     int row = dest.first;
     int col = dest.second;
@@ -187,10 +187,9 @@ void tracePath(result r, cell cellDetails[][COL], Pair dest)
 
 
             Path[idx] = make_pair(row, col);
-            idx++;
-            for (int i = 0; i < idx; i++)
+            for (int i = idx; i >= 0; i--)
             {
-                Pair p = Path[idx];
+                Pair p = Path[i];
                 output << "(" << p.first << "," << p.second << ")" << endl;
             }
         }
@@ -213,8 +212,8 @@ void tracePath(result r, cell cellDetails[][COL], Pair dest)
             break;
 
         case PATH_NOT_FOUND:
-             output << "Path was not found";
-             break;
+            output << "Path was not found";
+            break;
     }
 
     output.flush();
