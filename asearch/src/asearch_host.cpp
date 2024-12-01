@@ -78,10 +78,10 @@ int main(int argc, char** argv)
     cell details[ROW][COL];
     for (int i = 0; i < ROW; i++)
     {
-       for(int j=0; j<COL; j++)
-       {
-         details[i][j]=cell();
-       }
+        for (int j = 0; j < COL; j++)
+        {
+            details[i][j] = cell();
+        }
     }
 
     std::cout << "Execution of the kernel" << std::endl;

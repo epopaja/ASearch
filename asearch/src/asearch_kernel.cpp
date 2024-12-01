@@ -35,6 +35,15 @@ extern "C"
         }
 
         printf("Doing initialization\n");
+        printf("Grid:\n");
+        for (int x = 0; x < ROW; x++)
+        {
+            for (int y = 0; y < COL; y++)
+            {
+                printf("%d ", grid[x][y]);
+            }
+            printf("\n");
+        }
 
         // Create and populate closed list
         bool closedList[ROW][COL];
@@ -361,7 +370,7 @@ extern "C"
         {
             for (int y = 0; y < COL; y++)
             {
-              printf("closedList[%d][%d] = %d\n", x, y, closedList[x][y]);
+                printf("closedList[%d][%d] = %d\n", x, y, closedList[x][y]);
             }
         }
 
@@ -398,67 +407,6 @@ double calculateHValue(int row, int col, Pair dest)
 
     return sqrt(sum);
 }
-
-//void tracePath(result r, cell cellDetails[][COL], Pair dest)
-//{
-//    FILE* pFile;
-//    int row = dest.first;
-//    int col = dest.second;
-//
-//    Pair Path[ROW * COL];
-//
-//    pFile = fopen("output.dat", "w");
-//
-//    switch (r)
-//    {
-//        case FOUND_PATH:
-//        {
-//            fprintf(pFile, "The destination cell is found\r\n\r\n");
-//
-//            fprintf(pFile, "The path is \r\n");
-//
-//            int idx = 0;
-//            while (!(cellDetails[row][col].parent_i == row &&
-//                cellDetails[row][col].parent_j == col))
-//            {
-//                Path[idx] = make_pair(row, col);
-//                idx++;
-//                int tempRow = cellDetails[row][col].parent_i;
-//                int tempCol = cellDetails[row][col].parent_j;
-//                row = tempRow;
-//                col = tempCol;
-//            }
-//
-//
-//            Path[idx] = make_pair(row, col);
-//            idx++;
-//            for (int i = 0; i < idx; i++)
-//            {
-//                Pair p = Path[idx];
-//                fprintf(pFile, "(%d,%d)\r\n", p.first, p.second);
-//            }
-//        }
-//        break;
-//
-//        case INVALID_SOURCE:
-//            fprintf(pFile, "Source is invalid");
-//            break;
-//
-//        case INVALID_DESTINATION:
-//            fprintf(pFile, "Destination is invalid");
-//            break;
-//
-//        case PATH_IS_BLOCKED:
-//            fprintf(pFile, "Source or the destination is blocked");
-//            break;
-//
-//        case ALREADY_AT_DESTINATION:
-//            fprintf(pFile, "Already at destination");
-//            break;
-//    }
-//
-//    fclose(pFile);
-//}
 
 void readGrid(const char* file, int grid[][COL])
 {
