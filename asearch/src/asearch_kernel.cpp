@@ -247,6 +247,8 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
+                        addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
+
                         cellDetails[newI][newJ].f = newF;
                         cellDetails[newI][newJ].g = newG;
                         cellDetails[newI][newJ].h = newH;
@@ -277,6 +279,8 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
+                        addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
+
                         cellDetails[newI][newJ].f = newF;
                         cellDetails[newI][newJ].g = newG;
                         cellDetails[newI][newJ].h = newH;
@@ -307,6 +311,8 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
+                        addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
+
                         cellDetails[newI][newJ].f = newF;
                         cellDetails[newI][newJ].g = newG;
                         cellDetails[newI][newJ].h = newH;
@@ -337,6 +343,8 @@ extern "C"
 
                     if (checkF(cellDetails, newI, newJ, newF))
                     {
+                        addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
+
                         cellDetails[newI][newJ].f = newF;
                         cellDetails[newI][newJ].g = newG;
                         cellDetails[newI][newJ].h = newH;
@@ -497,7 +505,7 @@ void getNext(pPair* list, int* index)
     for (int i = 0; i < COL * ROW; i++)
     {
         if (rtnVal.first == -1 || // If no valid value has been grabbed
-            rtnVal.first > list[i].first // Or the list's value is an easier distance
+            (rtnVal.first > list[i].first && list[i].first != -1)// Or the list's value is an easier distance
             )
         {
             *index = i;
