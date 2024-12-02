@@ -21,9 +21,9 @@
 
 
 # Hardware
-1. Run `tmux -t new build`
+1. Run `tmux new -t build`
 2. Run the steps in general setup.
-3. Build file by running `make all TARGET=hw_emu PLATFORM=/opt/xilinx/platforms/xilinx_u280_gen3x16_xdma_1_202211_1/xilinx_u280_gen3x16_xdma_1_202211_1.xpfm`.
+3. Build file by running `make all TARGET=hw PLATFORM=/opt/xilinx/platforms/xilinx_u280_gen3x16_xdma_1_202211_1/xilinx_u280_gen3x16_xdma_1_202211_1.xpfm`.
 4. Perform `ctrl + b, d` and wait ~2 hours for build to complete.
 5. You can check to see if the process has completed by running the command `tmux attach`  
 **Make sure the build succededs.**
