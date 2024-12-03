@@ -82,17 +82,17 @@ extern "C"
         addPPair(openList, make_pair(0.0, make_pair(i, j)));
         bool foundDest = false;
 
-        std::vector<std::vector<int>> dirOffsets = {
-            {1, 0},   // Right
-            {1, 1},   // Down-Right
-            {0, 1},   // Down
-            {-1, 1},  // Down-Left
-            {-1, 0},  // Left
-            {-1, -1}, // Up-Left
-            {0, -1},  // Up
-            {1, -1}   // Up-Right
+        int dirOffsets[8][2] = {
+            {-1,  0},  // North
+            { 1,  0},  // South
+            { 0,  1},  // East
+            { 0, -1},  // West
+            {-1,  1},  // North-East
+            {-1, -1},  // North-West
+            { 1,  1},  // South-East
+            { 1, -1}   // South-West
         };
-
+        
         while (!checkForEmpty(openList) && !foundDest) {
             int index;
             getNext(openList, &index);
@@ -103,34 +103,57 @@ extern "C"
             j = p.second.second;
             closedList[i][j] = true;
 
-            for (int dir = 0; dir < 8; dir++) {
-                #pragma HLS UNROLL factor=2
-                #pragma HLS PIPELINE II=1
-                int newI = i + dirOffsets[dir][0];
-                int newJ = j + dirOffsets[dir][1];
-
-                if (isValid(newI, newJ)) {
-                    if (isDestination(newI, newJ, dest)) {
-                        cellDetails[newI][newJ].parent_i = i;
-                        cellDetails[newI][newJ].parent_j = j;
-                        foundDest = true;
-                        break;
-                    } else if (!closedList[newI][newJ] &&
-                               isUnBlocked(grid, newI, newJ)) {
-                        double newG = cellDetails[i][j].g + ((dir < 4) ? 1.0 : 1.414);
-                        double newH = calculateHValue(newI, newJ, dest);
-                        double newF = newG + newH;
-
-                        if (checkF(cellDetails, newI, newJ, newF)) {
-                            addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
-
-                            cellDetails[newI][newJ].f = newF;
-                            cellDetails[newI][newJ].g = newG;
-                            cellDetails[newI][newJ].h = newH;
+            for (int dir = 0; dir < 8; dir += 2) {
+                if (dir + 1 < diroffsets.size()) {
+                    // First direction
+                    newI = i + diroffsets[dir][0];
+                    newJ = j + diroffsets[dir][1];
+                    if (isValid(newI, newJ)) {
+                        if (isDestination(newI, newJ, dest)) {
                             cellDetails[newI][newJ].parent_i = i;
                             cellDetails[newI][newJ].parent_j = j;
+                            foundDest = true;
+                            break;
+                        } else if (!closedList[newI][newJ] && isUnBlocked(grid, newI, newJ)) {
+                            newG = cellDetails[i][j].g + (dir >= 4 ? 1.414 : 1.0);
+                            newH = calculateHValue(newI, newJ, dest);
+                            newF = newG + newH;
+                            if (checkF(cellDetails, newI, newJ, newF)) {
+                                addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
+                                cellDetails[newI][newJ].f = newF;
+                                cellDetails[newI][newJ].g = newG;
+                                cellDetails[newI][newJ].h = newH;
+                                cellDetails[newI][newJ].parent_i = i;
+                                cellDetails[newI][newJ].parent_j = j;
+                            }
                         }
                     }
+
+                    // Second direction
+                    newI = i + diroffsets[dir + 1][0];
+                    newJ = j + diroffsets[dir + 1][1];
+                    if (isValid(newI, newJ)) {
+                        if (isDestination(newI, newJ, dest)) {
+                            cellDetails[newI][newJ].parent_i = i;
+                            cellDetails[newI][newJ].parent_j = j;
+                            foundDest = true;
+                            break;
+                        } else if (!closedList[newI][newJ] && isUnBlocked(grid, newI, newJ)) {
+                            newG = cellDetails[i][j].g + (dir >= 4 ? 1.414 : 1.0);
+                            newH = calculateHValue(newI, newJ, dest);
+                            newF = newG + newH;
+                            if (checkF(cellDetails, newI, newJ, newF)) {
+                                addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
+                                cellDetails[newI][newJ].f = newF;
+                                cellDetails[newI][newJ].g = newG;
+                                cellDetails[newI][newJ].h = newH;
+                                cellDetails[newI][newJ].parent_i = i;
+                                cellDetails[newI][newJ].parent_j = j;
+                            }
+                        }
+                    }
+                } else {
+                    std::cerr << "Out of bounds access in diroffsets: dir = " << dir << std::endl;
                 }
             }
         }
