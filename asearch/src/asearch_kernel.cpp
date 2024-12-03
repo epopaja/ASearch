@@ -82,7 +82,7 @@ extern "C"
         addPPair(openList, make_pair(0.0, make_pair(i, j)));
         bool foundDest = false;
 
-        int diroffsets[8][2] = {
+        int dirOffsets[8][2] = {
             {-1,  0},  // North
             { 1,  0},  // South
             { 0,  1},  // East
