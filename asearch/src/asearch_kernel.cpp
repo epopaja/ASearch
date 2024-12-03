@@ -10,55 +10,62 @@ extern "C"
 {
     void asearch(int gridIn[], Pair src, Pair dest, result* res, cell cellOut[])
     {
-        #pragma HLS INTERFACE s_axilite port=src bundle=control
-        #pragma HLS INTERFACE s_axilite port=dest bundle=control
-        #pragma HLS INTERFACE s_axilite port=res bundle=control
-        #pragma HLS INTERFACE s_axilite port=return bundle=control
-        #pragma HLS INTERFACE s_axilite port=gridIn bundle=control
-        #pragma HLS INTERFACE s_axilite port=cellOut bundle=control
-
         int grid[ROW][COL];
-        #pragma HLS ARRAY_PARTITION variable=grid dim=2 complete
-
-        // Flatten input grid for easier data loading
-        for (int x = 0; x < ROW; x++) {
-            #pragma HLS UNROLL factor=2
-            for (int y = 0; y < COL; y++) {
-                #pragma HLS PIPELINE II=1
+        for (int x = 0; x < ROW; x++)
+        {
+            for (int y = 0; y < COL; y++)
+            {
                 grid[x][y] = gridIn[x * COL + y];
             }
         }
 
         result r = PATH_NOT_FOUND;
 
-        if (!isValid(src.first, src.second)) {
+        printf("Pre-Check\n");
+
+        if (!isValid(src.first, src.second))
+        {
             r = INVALID_SOURCE;
         }
 
-        if (!isValid(dest.first, dest.second)) {
+        if (!isValid(dest.first, dest.second))
+        {
             r = INVALID_DESTINATION;
         }
 
         if (!isUnBlocked(grid, src.first, src.second) ||
-            !isUnBlocked(grid, dest.first, dest.second)) {
+            !isUnBlocked(grid, dest.first, dest.second))
+        {
             r = PATH_IS_BLOCKED;
         }
 
-        if (isDestination(src.first, src.second, dest)) {
+        if (isDestination(src.first, src.second, dest))
+        {
             r = ALREADY_AT_DESTINATION;
         }
 
+        printf("Doing initialization\n");
+        printf("Grid:\n");
+        for (int x = 0; x < ROW; x++)
+        {
+            for (int y = 0; y < COL; y++)
+            {
+                printf("%d ", grid[x][y]);
+            }
+            printf("\n");
+        }
+
+        // Create and populate closed list
         bool closedList[ROW][COL];
-        #pragma HLS ARRAY_PARTITION variable=closedList dim=2 complete
+        memset(closedList, false, sizeof(closedList));
+
+        int i, j, newI, newJ;
 
         cell cellDetails[ROW][COL];
-        #pragma HLS ARRAY_PARTITION variable=cellDetails dim=2 complete
-
-        for (int i = 0; i < ROW; i++) {
-            #pragma HLS UNROLL factor=2
-            for (int j = 0; j < COL; j++) {
-                #pragma HLS PIPELINE II=1
-                closedList[i][j] = false;
+        for (i = 0; i < ROW; i++)
+        {
+            for (j = 0; j < COL; j++)
+            {
                 cellDetails[i][j] = cell();
                 cellDetails[i][j].f = FLT_MAX;
                 cellDetails[i][j].g = FLT_MAX;
@@ -68,8 +75,10 @@ extern "C"
             }
         }
 
-        // Initialize start node
-        int i = src.first, j = src.second;
+        printf("Selecting first node\n");
+        // Set starting node
+        i = src.first;
+        j = src.second;
         cellDetails[i][j].f = 0.0;
         cellDetails[i][j].g = 0.0;
         cellDetails[i][j].h = 0.0;
@@ -77,95 +86,91 @@ extern "C"
         cellDetails[i][j].parent_j = j;
 
         pPair openList[ROW * COL];
-        #pragma HLS ARRAY_PARTITION variable=openList dim=1 complete
-
+        int index = 0;
         init(openList);
+
         addPPair(openList, make_pair(0.0, make_pair(i, j)));
         bool foundDest = false;
 
-        std::vector<std::vector<int>> diroffsets = {
-            {1, 0},   // Right
-            {1, 1},   // Down-Right
-            {0, 1},   // Down
-            {-1, 1},  // Down-Left
-            {-1, 0},  // Left
-            {-1, -1}, // Up-Left
-            {0, -1},  // Up
-            {1, -1}   // Up-Right
-        };
-        
-        int newI, newJ;  // For storing the new indices
-        double newG, newH, newF;  // For storing new G, H, F values
-
-        while (!checkForEmpty(openList) && !foundDest) {
-            int index;
+        printf("Loop Starting\n");
+        while (!checkForEmpty(openList) && !foundDest)
+        {
             getNext(openList, &index);
             pPair p = openList[index];
+
             removePPair(openList, index);
 
             i = p.second.first;
             j = p.second.second;
             closedList[i][j] = true;
 
-            for (int dir = 0; dir < 8; dir += 2) {
-                if (dir + 1 < diroffsets.size()) {
-                    // First direction
-                    newI = i + diroffsets[dir][0];
-                    newJ = j + diroffsets[dir][1];
-                    if (isValid(newI, newJ)) {
-                        if (isDestination(newI, newJ, dest)) {
-                            cellDetails[newI][newJ].parent_i = i;
-                            cellDetails[newI][newJ].parent_j = j;
-                            foundDest = true;
-                            break;
-                        } else if (!closedList[newI][newJ] && isUnBlocked(grid, newI, newJ)) {
-                            newG = cellDetails[i][j].g + (dir >= 4 ? 1.414 : 1.0);
-                            newH = calculateHValue(newI, newJ, dest);
-                            newF = newG + newH;
-                            if (checkF(cellDetails, newI, newJ, newF)) {
-                                addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
-                                cellDetails[newI][newJ].f = newF;
-                                cellDetails[newI][newJ].g = newG;
-                                cellDetails[newI][newJ].h = newH;
-                                cellDetails[newI][newJ].parent_i = i;
-                                cellDetails[newI][newJ].parent_j = j;
-                            }
-                        }
-                    }
+            double newG, newH, newF;
 
-                    // Second direction
-                    newI = i + diroffsets[dir + 1][0];
-                    newJ = j + diroffsets[dir + 1][1];
-                    if (isValid(newI, newJ)) {
-                        if (isDestination(newI, newJ, dest)) {
+            // Unrolling the checks for neighboring cells (North, South, East, West, etc.)
+            #pragma HLS UNROLL factor=8
+            for (int dir = 0; dir < 8; dir++)
+            {
+                // Set the movement directions
+                int deltaI = 0, deltaJ = 0;
+                double cost = 1.0;
+                switch (dir)
+                {
+                    case 0: deltaI = -1; deltaJ = 0; break; // North
+                    case 1: deltaI = 1; deltaJ = 0; break; // South
+                    case 2: deltaI = 0; deltaJ = 1; break; // East
+                    case 3: deltaI = 0; deltaJ = -1; break; // West
+                    case 4: deltaI = -1; deltaJ = 1; cost = 1.414; break; // North-East
+                    case 5: deltaI = -1; deltaJ = -1; cost = 1.414; break; // North-West
+                    case 6: deltaI = 1; deltaJ = 1; cost = 1.414; break; // South-East
+                    case 7: deltaI = 1; deltaJ = -1; cost = 1.414; break; // South-West
+                }
+
+                newI = i + deltaI;
+                newJ = j + deltaJ;
+                if (isValid(newI, newJ))
+                {
+                    if (isDestination(newI, newJ, dest))
+                    {
+                        cellDetails[newI][newJ].parent_i = i;
+                        cellDetails[newI][newJ].parent_j = j;
+                        foundDest = true;
+                        break;
+                    }
+                    else if (!closedList[newI][newJ] && isUnBlocked(grid, newI, newJ))
+                    {
+                        newG = cellDetails[i][j].g + cost;
+                        newH = calculateHValue(newI, newJ, dest);
+                        newF = newG + newH;
+
+                        if (checkF(cellDetails, newI, newJ, newF))
+                        {
+                            addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
+
+                            cellDetails[newI][newJ].f = newF;
+                            cellDetails[newI][newJ].g = newG;
+                            cellDetails[newI][newJ].h = newH;
                             cellDetails[newI][newJ].parent_i = i;
                             cellDetails[newI][newJ].parent_j = j;
-                            foundDest = true;
-                            break;
-                        } else if (!closedList[newI][newJ] && isUnBlocked(grid, newI, newJ)) {
-                            newG = cellDetails[i][j].g + (dir >= 4 ? 1.414 : 1.0);
-                            newH = calculateHValue(newI, newJ, dest);
-                            newF = newG + newH;
-                            if (checkF(cellDetails, newI, newJ, newF)) {
-                                addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
-                                cellDetails[newI][newJ].f = newF;
-                                cellDetails[newI][newJ].g = newG;
-                                cellDetails[newI][newJ].h = newH;
-                                cellDetails[newI][newJ].parent_i = i;
-                                cellDetails[newI][newJ].parent_j = j;
-                            }
                         }
                     }
-                } else {
-                    std::cerr << "Out of bounds access in diroffsets: dir = " << dir << std::endl;
                 }
             }
         }
+        printf("Loop Done\n");
 
-        for (int x = 0; x < ROW; x++) {
-            #pragma HLS UNROLL factor=2
-            for (int y = 0; y < COL; y++) {
-                #pragma HLS PIPELINE II=1
+        printf("Closed Loop\n");
+        for (int x = 0; x < ROW; x++)
+        {
+            for (int y = 0; y < COL; y++)
+            {
+                printf("closedList[%d][%d] = %d\n", x, y, closedList[x][y]);
+            }
+        }
+
+        for (int x = 0; x < ROW; x++)
+        {
+            for (int y = 0; y < COL; y++)
+            {
                 cellOut[x * COL + y] = cellDetails[x][y];
             }
         }
@@ -173,6 +178,7 @@ extern "C"
         r = foundDest ? FOUND_PATH : PATH_NOT_FOUND;
         *res = r;
     }
+
 }
 
 bool isValid(int row, int col)
