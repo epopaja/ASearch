@@ -82,15 +82,15 @@ extern "C"
         addPPair(openList, make_pair(0.0, make_pair(i, j)));
         bool foundDest = false;
 
-        int dirOffsets[8][2] = {
-            {-1,  0},  // North
-            { 1,  0},  // South
-            { 0,  1},  // East
-            { 0, -1},  // West
-            {-1,  1},  // North-East
-            {-1, -1},  // North-West
-            { 1,  1},  // South-East
-            { 1, -1}   // South-West
+        std::vector<std::vector<int>> diroffsets = {
+            {1, 0},   // Right
+            {1, 1},   // Down-Right
+            {0, 1},   // Down
+            {-1, 1},  // Down-Left
+            {-1, 0},  // Left
+            {-1, -1}, // Up-Left
+            {0, -1},  // Up
+            {1, -1}   // Up-Right
         };
         
         while (!checkForEmpty(openList) && !foundDest) {
