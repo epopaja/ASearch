@@ -4,6 +4,7 @@
 
 #include "asearch_kernel.h"
 #include <stdio.h>
+#include <vector>
 
 extern "C"
 {
@@ -92,7 +93,7 @@ extern "C"
             {0, -1},  // Up
             {1, -1}   // Up-Right
         };
-        
+
         while (!checkForEmpty(openList) && !foundDest) {
             int index;
             getNext(openList, &index);
