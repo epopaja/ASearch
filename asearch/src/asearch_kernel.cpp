@@ -93,6 +93,9 @@ extern "C"
             {0, -1},  // Up
             {1, -1}   // Up-Right
         };
+        
+        int newI, newJ;  // For storing the new indices
+        double newG, newH, newF;  // For storing new G, H, F values
 
         while (!checkForEmpty(openList) && !foundDest) {
             int index;
