@@ -82,7 +82,7 @@ extern "C"
         addPPair(openList, make_pair(0.0, make_pair(i, j)));
         bool foundDest = false;
 
-        std::vector<std::vector<int>> diroffsets = {
+        std::vector<std::vector<int>> dirOffsets = {
             {1, 0},   // Right
             {1, 1},   // Down-Right
             {0, 1},   // Down
@@ -92,7 +92,7 @@ extern "C"
             {0, -1},  // Up
             {1, -1}   // Up-Right
         };
-        
+
         while (!checkForEmpty(openList) && !foundDest) {
             int index;
             getNext(openList, &index);
