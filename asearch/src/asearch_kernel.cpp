@@ -9,12 +9,12 @@ extern "C"
 {
     void asearch(int gridIn[], Pair src, Pair dest, result* res, cell cellOut[])
     {
-        #pragma HLS INTERFACE m_axi port=gridIn offset=slave bundle=gmem
-        #pragma HLS INTERFACE m_axi port=cellOut offset=slave bundle=gmem
         #pragma HLS INTERFACE s_axilite port=src bundle=control
         #pragma HLS INTERFACE s_axilite port=dest bundle=control
         #pragma HLS INTERFACE s_axilite port=res bundle=control
         #pragma HLS INTERFACE s_axilite port=return bundle=control
+        #pragma HLS INTERFACE s_axilite port=gridIn bundle=control
+        #pragma HLS INTERFACE s_axilite port=cellOut bundle=control
 
         int grid[ROW][COL];
         #pragma HLS ARRAY_PARTITION variable=grid dim=2 complete
