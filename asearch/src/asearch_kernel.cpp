@@ -101,6 +101,9 @@ extern "C"
                 continue;
             closedList[i][j] = true;
 
+            int dirI[8] = {-1, +1,  0,  0, -1, -1, +1, +1}; // Row changes
+            int dirJ[8] = { 0,  0, +1, -1, +1, -1, +1, -1}; // Column changes
+
             // Process all neighbors
             for (int k = 0; k < 8; k++)
             {
