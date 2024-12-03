@@ -1,71 +1,73 @@
+/*
+* Based off of https://www.geeksforgeeks.org/a-search-algorithm/
+*/
+
 #include "asearch_kernel.h"
 #include <stdio.h>
-#include <string.h>
-#include <float.h>
-#include <math.h>
 
 extern "C"
 {
     void asearch(int gridIn[], Pair src, Pair dest, result* res, cell cellOut[])
     {
-        int grid[ROW][COL];
+        #pragma HLS INTERFACE m_axi port=gridIn offset=slave bundle=gmem
+        #pragma HLS INTERFACE m_axi port=cellOut offset=slave bundle=gmem
+        #pragma HLS INTERFACE s_axilite port=src bundle=control
+        #pragma HLS INTERFACE s_axilite port=dest bundle=control
+        #pragma HLS INTERFACE s_axilite port=res bundle=control
+        #pragma HLS INTERFACE s_axilite port=return bundle=control
 
-        // Unroll the loop for grid initialization
-        for (int x = 0; x < ROW; x++)
-        {
-            for (int y = 0; y < COL; y += 4) // Process 4 elements per iteration
-            {
+        int grid[ROW][COL];
+        #pragma HLS ARRAY_PARTITION variable=grid dim=2 complete
+
+        // Flatten input grid for easier data loading
+        for (int x = 0; x < ROW; x++) {
+            #pragma HLS UNROLL factor=2
+            for (int y = 0; y < COL; y++) {
+                #pragma HLS PIPELINE II=1
                 grid[x][y] = gridIn[x * COL + y];
-                if (y + 1 < COL) grid[x][y + 1] = gridIn[x * COL + y + 1];
-                if (y + 2 < COL) grid[x][y + 2] = gridIn[x * COL + y + 2];
-                if (y + 3 < COL) grid[x][y + 3] = gridIn[x * COL + y + 3];
             }
         }
 
         result r = PATH_NOT_FOUND;
 
-        // Early checks
-        if (!isValid(src.first, src.second))
-        {
-            *res = INVALID_SOURCE;
-            return;
+        if (!isValid(src.first, src.second)) {
+            r = INVALID_SOURCE;
         }
 
-        if (!isValid(dest.first, dest.second))
-        {
-            *res = INVALID_DESTINATION;
-            return;
+        if (!isValid(dest.first, dest.second)) {
+            r = INVALID_DESTINATION;
         }
 
         if (!isUnBlocked(grid, src.first, src.second) ||
-            !isUnBlocked(grid, dest.first, dest.second))
-        {
-            *res = PATH_IS_BLOCKED;
-            return;
+            !isUnBlocked(grid, dest.first, dest.second)) {
+            r = PATH_IS_BLOCKED;
         }
 
-        if (isDestination(src.first, src.second, dest))
-        {
-            *res = ALREADY_AT_DESTINATION;
-            return;
+        if (isDestination(src.first, src.second, dest)) {
+            r = ALREADY_AT_DESTINATION;
         }
 
         bool closedList[ROW][COL];
-        memset(closedList, false, sizeof(closedList));
+        #pragma HLS ARRAY_PARTITION variable=closedList dim=2 complete
 
         cell cellDetails[ROW][COL];
+        #pragma HLS ARRAY_PARTITION variable=cellDetails dim=2 complete
 
-        // Initialize cell details with loop unrolling
-        for (int i = 0; i < ROW; i++)
-        {
-            for (int j = 0; j < COL; j += 2) // Unrolling by factor of 2
-            {
+        for (int i = 0; i < ROW; i++) {
+            #pragma HLS UNROLL factor=2
+            for (int j = 0; j < COL; j++) {
+                #pragma HLS PIPELINE II=1
+                closedList[i][j] = false;
                 cellDetails[i][j] = cell();
-                if (j + 1 < COL)
-                    cellDetails[i][j + 1] = cell();
+                cellDetails[i][j].f = FLT_MAX;
+                cellDetails[i][j].g = FLT_MAX;
+                cellDetails[i][j].h = FLT_MAX;
+                cellDetails[i][j].parent_i = -1;
+                cellDetails[i][j].parent_j = -1;
             }
         }
 
+        // Initialize start node
         int i = src.first, j = src.second;
         cellDetails[i][j].f = 0.0;
         cellDetails[i][j].g = 0.0;
@@ -74,15 +76,14 @@ extern "C"
         cellDetails[i][j].parent_j = j;
 
         pPair openList[ROW * COL];
-        int index = 0;
+        #pragma HLS ARRAY_PARTITION variable=openList dim=1 complete
+
         init(openList);
         addPPair(openList, make_pair(0.0, make_pair(i, j)));
-
         bool foundDest = false;
 
-        // Main loop
-        while (!checkForEmpty(openList) && !foundDest)
-        {
+        while (!checkForEmpty(openList) && !foundDest) {
+            int index;
             getNext(openList, &index);
             pPair p = openList[index];
             removePPair(openList, index);
@@ -91,48 +92,27 @@ extern "C"
             j = p.second.second;
             closedList[i][j] = true;
 
-            // Check all possible movements (8 directions)
-            const int dRow[] = {-1, 1, 0, 0, -1, -1, 1, 1};
-            const int dCol[] = {0, 0, 1, -1, 1, -1, 1, -1};
-            const double cost[] = {1.0, 1.0, 1.0, 1.0, 1.414, 1.414, 1.414, 1.414};
+            for (int dir = 0; dir < 8; dir++) {
+                #pragma HLS UNROLL factor=2
+                #pragma HLS PIPELINE II=1
+                int newI = i + dirOffsets[dir][0];
+                int newJ = j + dirOffsets[dir][1];
 
-            for (int dir = 0; dir < 8; dir += 2) // Unroll loop by factor of 2
-            {
-                int newI = i + dRow[dir];
-                int newJ = j + dCol[dir];
-                if (isValid(newI, newJ) && !closedList[newI][newJ] &&
-                    isUnBlocked(grid, newI, newJ))
-                {
-                    double newG = cellDetails[i][j].g + cost[dir];
-                    double newH = calculateHValue(newI, newJ, dest);
-                    double newF = newG + newH;
-
-                    if (checkF(cellDetails, newI, newJ, newF))
-                    {
-                        addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
-                        cellDetails[newI][newJ].f = newF;
-                        cellDetails[newI][newJ].g = newG;
-                        cellDetails[newI][newJ].h = newH;
+                if (isValid(newI, newJ)) {
+                    if (isDestination(newI, newJ, dest)) {
                         cellDetails[newI][newJ].parent_i = i;
                         cellDetails[newI][newJ].parent_j = j;
-                    }
-                }
-
-                // Unrolled second direction
-                if (dir + 1 < 8)
-                {
-                    newI = i + dRow[dir + 1];
-                    newJ = j + dCol[dir + 1];
-                    if (isValid(newI, newJ) && !closedList[newI][newJ] &&
-                        isUnBlocked(grid, newI, newJ))
-                    {
-                        double newG = cellDetails[i][j].g + cost[dir + 1];
+                        foundDest = true;
+                        break;
+                    } else if (!closedList[newI][newJ] &&
+                               isUnBlocked(grid, newI, newJ)) {
+                        double newG = cellDetails[i][j].g + ((dir < 4) ? 1.0 : 1.414);
                         double newH = calculateHValue(newI, newJ, dest);
                         double newF = newG + newH;
 
-                        if (checkF(cellDetails, newI, newJ, newF))
-                        {
+                        if (checkF(cellDetails, newI, newJ, newF)) {
                             addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
+
                             cellDetails[newI][newJ].f = newF;
                             cellDetails[newI][newJ].g = newG;
                             cellDetails[newI][newJ].h = newH;
@@ -142,22 +122,128 @@ extern "C"
                     }
                 }
             }
-
-            if (isDestination(i, j, dest))
-            {
-                foundDest = true;
-                break;
-            }
         }
 
-        for (int x = 0; x < ROW; x++)
-        {
-            for (int y = 0; y < COL; y++)
-            {
+        for (int x = 0; x < ROW; x++) {
+            #pragma HLS UNROLL factor=2
+            for (int y = 0; y < COL; y++) {
+                #pragma HLS PIPELINE II=1
                 cellOut[x * COL + y] = cellDetails[x][y];
             }
         }
 
-        *res = foundDest ? FOUND_PATH : PATH_NOT_FOUND;
+        r = foundDest ? FOUND_PATH : PATH_NOT_FOUND;
+        *res = r;
+    }
+}
+
+bool isValid(int row, int col)
+{
+    return (row >= 0) &&
+        (row < ROW) &&
+        (col >= 0) &&
+        (col < COL);
+}
+
+bool isUnBlocked(int grid[][COL], int row, int col)
+{
+    return grid[row][col] == 1;
+}
+
+bool isDestination(int row, int col, Pair dest)
+{
+    return row == dest.first && col == dest.second;
+}
+
+double calculateHValue(int row, int col, Pair dest)
+{
+    double xDiff = row - dest.first;
+    double yDiff = col - dest.second;
+
+    double sum = (xDiff * xDiff) + (yDiff * yDiff);
+
+    return sqrt(sum);
+}
+
+void readGrid(const char* file, int grid[][COL])
+{
+    FILE* pFile = fopen(file, "r");
+
+    int val;
+    for (int i = 0; i < ROW; i++)
+    {
+        for (int j = 0; j < COL; j++)
+        {
+            fscanf(pFile, "%i", &val);
+            grid[i][j] = val;
+        }
+    }
+
+    fclose(pFile);
+}
+
+bool checkF(cell cellDetails[][COL], int i, int j, double f)
+{
+    return cellDetails[i][j].f == FLT_MAX || cellDetails[i][j].f > f;
+}
+
+void init(pPair* list)
+{
+    for (int i = 0; i < COL * ROW; i++)
+    {
+        list[i] = make_pair(-1, make_pair(-1, -1));
+    }
+}
+
+bool checkForEmpty(pPair* list)
+{
+    bool empty = true;
+
+    for (int i = 0; empty && i < COL * ROW; i++)
+    {
+        if (list[i].first != -1)
+        {
+            empty = false;
+            break;
+        }
+    }
+
+    return empty;
+}
+
+void getNext(pPair* list, int* index)
+{
+    pPair rtnVal = make_pair(-1, make_pair(-1, -1));
+    *index = 0;
+
+    for (int i = 0; i < COL * ROW; i++)
+    {
+        if (rtnVal.first == -1 || // If no valid value has been grabbed
+            (rtnVal.first > list[i].first && list[i].first != -1)// Or the list's value is an easier distance
+            )
+        {
+            *index = i;
+            rtnVal = list[i];
+        }
+    }
+}
+
+void addPPair(pPair* list, const pPair& pair)
+{
+    for (int i = 0; i < COL * ROW; i++)
+    {
+        if (list[i].first == -1)
+        {
+            list[i] = pair;
+            break;
+        }
+    }
+}
+
+void removePPair(pPair* list, int index)
+{
+    if (0 <= index && index < COL * ROW)
+    {
+        list[index] = make_pair(-1, make_pair(-1, -1));
     }
 }
