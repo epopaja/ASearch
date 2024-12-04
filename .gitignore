@@ -14,3 +14,7 @@ asearch/asearch_xrt
 
 #Excel working file
 ~$*.xlsm
+
+#Vitis ignores
+logs/**/logs
+**.ipcache
