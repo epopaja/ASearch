@@ -1,6 +1,6 @@
 Profile Summary
-Generated on: 2024-12-03 22:15:52
-Msec since Epoch: 1733282152782
+Generated on: 2024-12-03 22:47:08
+Msec since Epoch: 1733284028534
 Profiled application: asearch_xrt
 Target platform: Xilinx
 Tool version: 2023.1
@@ -13,7 +13,7 @@ Flow mode: System Run
 
 Compute Unit Utilization
 Device,Compute Unit,Kernel,Global Work Size,Local Work Size,Number Of Calls,Dataflow Execution,Max Overlapping Executions,Dataflow Acceleration,Total Time (ms),Minimum Time (ms),Average Time (ms),Maximum Time (ms),Clock Frequency (MHz),
-xilinx_u280_gen3x16_xdma_base_1-0,asearch_1,asearch,1:1:1,1:1:1,1,Yes,1,1.000000x,0.0291733,0.0291767,0.0291733,0.0291767,300,
+xilinx_u280_gen3x16_xdma_base_1-0,asearch_1,asearch,1:1:1,1:1:1,1,Yes,1,1.000000x,0.02919,0.0291933,0.02919,0.0291933,300,
 
 
 
@@ -38,18 +38,18 @@ COLUMN:<html>Total<br>Time (ms)</html>,float,Total execution time (in ms),
 COLUMN:<html>Minimum<br>Time (ms)</html>,float,Minimum execution time (in ms),
 COLUMN:<html>Average<br>Time (ms)</html>,float,Average execution time (in ms),
 COLUMN:<html>Maximum<br>Time (ms)</html>,float,Maximum execution time (in ms),
-ENTRY:xrt::bo::address,4,0.005611,0.000189,0.00140275,0.004444,
-ENTRY:xrt::bo::bo,4,0.360949,0.006421,0.0902373,0.326302,
-ENTRY:xrt::bo::map,4,0.002095,0.000262,0.00052375,0.000869,
-ENTRY:xrt::bo::size,5,0.001894,0.00027,0.0003788,0.00059,
-ENTRY:xrt::bo::sync,7,0.338677,0.010726,0.0483824,0.170796,
-ENTRY:xrt::device::device,1,164.476,164.476,164.476,164.476,
-ENTRY:xrt::device::load_xclbin,1,71.3521,71.3521,71.3521,71.3521,
-ENTRY:xrt::kernel::group_id,3,0.003302,0.00027,0.00110067,0.002549,
-ENTRY:xrt::kernel::kernel,1,26.0536,26.0536,26.0536,26.0536,
-ENTRY:xrt::run::run,1,0.027862,0.027862,0.027862,0.027862,
-ENTRY:xrt::run::start,1,0.006671,0.006671,0.006671,0.006671,
-ENTRY:xrt::run::wait,1,0.105634,0.105634,0.105634,0.105634,
+ENTRY:xrt::bo::address,4,0.003038,0.000195,0.0007595,0.001868,
+ENTRY:xrt::bo::bo,4,0.36025,0.00696,0.0900625,0.325045,
+ENTRY:xrt::bo::map,4,0.002269,0.000276,0.00056725,0.000886,
+ENTRY:xrt::bo::size,5,0.002123,0.000261,0.0004246,0.000819,
+ENTRY:xrt::bo::sync,7,0.319389,0.010724,0.045627,0.150995,
+ENTRY:xrt::device::device,1,94.0436,94.0436,94.0436,94.0436,
+ENTRY:xrt::device::load_xclbin,1,71.399,71.399,71.399,71.399,
+ENTRY:xrt::kernel::group_id,3,0.003522,0.000279,0.001174,0.002776,
+ENTRY:xrt::kernel::kernel,1,25.8278,25.8278,25.8278,25.8278,
+ENTRY:xrt::run::run,1,0.028129,0.028129,0.028129,0.028129,
+ENTRY:xrt::run::start,1,0.006122,0.006122,0.006122,0.006122,
+ENTRY:xrt::run::wait,1,0.103783,0.103783,0.103783,0.103783,
 
 TITLE:Host Reads from Global Memory
 SECTION:Host Data Transfers,Host Reads from Global Memory
@@ -63,7 +63,7 @@ COLUMN:<html>Maximum<br>Time (ms)</html>,float,Maximum time of a single host rea
 COLUMN:<html>Minimum<br>Time (ms)</html>,float,Minimum time of a single host read,
 COLUMN:<html>Total<br>Time (ms)</html>,float,Combined time of all host reads,
 COLUMN:<html>Average<br>Time (ms)</html>,float,Average of read durations (in ms),
-ENTRY:3,2.88,0.004,1.13467,76.6442,0.486511,0.020632,0.010895,0.044413,0.0148043,
+ENTRY:3,2.88,0.004,1.13467,39.6649,0.251779,0.060645,0.010843,0.085819,0.0286063,
 
 TITLE:Host Writes to Global Memory
 SECTION:Host Data Transfers,Host Writes to Global Memory
@@ -77,7 +77,7 @@ COLUMN:<html>Maximum<br>Time (ms)</html>,float,Maximum time of a single host wri
 COLUMN:<html>Minimum<br>Time (ms)</html>,float,Minimum time of a single host write,
 COLUMN:<html>Total<br>Time (ms)</html>,float,Combined time of all host write,
 COLUMN:<html>Average<br>Time (ms)</html>,float,Average of write durations (in ms),
-ENTRY:4,1048.58,0.004,262.955,3556.49,22.5753,0.171192,0.011166,0.295747,0.0739367,
+ENTRY:4,1048.58,0.004,262.955,4476.25,28.4137,0.151356,0.014975,0.234978,0.0587445,
 
 TITLE:Top Memory Reads: Host from Global Memory
 SECTION:Host Data Transfers,Top Memory Reads
@@ -85,9 +85,9 @@ COLUMN:<html>Start<br>Time (ms)</html>,float,Start time of read transfer (in ms)
 COLUMN:<html>Buffer<br>Size (KB)</html>,float,Size of read transfer (in KB),
 COLUMN:<html>Duration (ms)</html>,float,Duration of read transfer (in ms),
 COLUMN:<html>Reading<br>Rate (MB/s)</html>,float,Transfer rate of reads: Reading Rate = (Buffer Size) / (Duration),
-ENTRY:262.598,0.004,0.020632,0.193874,
-ENTRY:262.903,0.52,0.012886,40.3539,
-ENTRY:262.622,2.88,0.010895,264.341,
+ENTRY:191.971,0.004,0.060645,0.0659576,
+ENTRY:192.338,0.52,0.014331,36.285,
+ENTRY:192.035,2.88,0.010843,265.609,
 
 TITLE:Top Memory Writes: Host to Global Memory
 SECTION:Host Data Transfers,Top Memory Writes
@@ -95,10 +95,10 @@ COLUMN:<html>Start<br>Time (ms)</html>,float,Start time of write transfer (in ms
 COLUMN:<html>Buffer<br>Size (KB)</html>,float,Size of write transfer (in KB),
 COLUMN:<html>Duration (ms)</html>,float,Duration of write transfer (in ms),
 COLUMN:<html>Writing<br>Rate (MB/s)</html>,float,Transfer rate of writes: Writing Rate = (Buffer Size) / (Duration),
-ENTRY:235.593,1048.58,0.171192,6125.15,
-ENTRY:262.304,0.36,0.085972,4.18741,
-ENTRY:262.394,0.004,0.027417,0.145895,
-ENTRY:262.423,2.88,0.011166,257.926,
+ENTRY:165.307,1048.58,0.151356,6927.88,
+ENTRY:191.693,0.36,0.05344,6.73653,
+ENTRY:191.768,2.88,0.015207,189.386,
+ENTRY:191.75,0.004,0.014975,0.267112,
 
 Guidance Parameters
 Parameter,Element,Value,
@@ -159,8 +159,8 @@ TRACE_BUFFER_FULL,xilinx_u280_gen3x16_xdma_base_1-0,false
 MEMORY_TYPE_BIT_WIDTH,xilinx_u280_gen3x16_xdma_base_1-0|HBM,256,
 MEMORY_TYPE_BIT_WIDTH,xilinx_u280_gen3x16_xdma_base_1-0|DDR,512,
 MEMORY_TYPE_BIT_WIDTH,xilinx_u280_gen3x16_xdma_base_1-0|PLRAM,512,
-APPLICATION_RUN_TIME_MS,all,316.191,
-TOTAL_KERNEL_RUN_TIME_MS,all,0.0291733,
+APPLICATION_RUN_TIME_MS,all,254.114,
+TOTAL_KERNEL_RUN_TIME_MS,all,0.02919,
 XRT_INI_SETTING,opencl_trace,0,Generation of trace of OpenCL APIs and memory transfers
 XRT_INI_SETTING,device_counters,0,Hardware counters added to summary file
 XRT_INI_SETTING,host_trace,0,Enable the top level of host trace
