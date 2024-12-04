@@ -24,7 +24,12 @@
 1. Run `tmux new -t build`
 2. Run the steps in general setup.
 3. Build file by running `make all TARGET=hw PLATFORM=/opt/xilinx/platforms/xilinx_u280_gen3x16_xdma_1_202211_1/xilinx_u280_gen3x16_xdma_1_202211_1.xpfm`.
-4. Perform `ctrl + b, d` and wait ~2 hours for build to complete.
+4. Perform `ctrl + b, d` and wait 2+ hours for build to complete.
 5. You can check to see if the process has completed by running the command `tmux attach`  
 **Make sure the build succededs.**
-6. **TO BE UPDATED**
+6. Transpose the excutable files over
+      - `scp -i ~/.ssh/<SSH Private Key File> asearch_xrt ./build_dir.hw.xilinx_u280_gen3x16_xdma_1_202211_1/asearch.xclbin out.gold.aStarSearch.dat xrt.ini <Cloud Username>@<node>.cloudlab.umass.edu:~`
+7. Run code on the FPGA `./asearch_xrt -x asearch.xclbin`
+8. Observe output for success message and check the out.dat file to make sure it matches the gold file.
+9. Transpose the output files back over to build server. Run this command on the build server.
+      - `scp -i ~/.ssh/<SSH Private Key File> <Cloud Username>@<node>.cloudlab.umass.edu:/users/<Cloud Username>/xrt.run_summary .`
