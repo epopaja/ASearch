@@ -4,161 +4,146 @@
 
 #include "asearch_kernel.h"
 #include <stdio.h>
-#include <vector>
 #include <hls_stream.h>
-#include <cstring>
-#include <cstdio>
-#include <cmath>
-#include <cfloat>
+#include <ap_int.h>
+#include <string.h>
+#include <float.h>
 
 extern "C"
 {
-    #define ROW 9  // Define ROW size
-    #define COL 10  // Define COL size
-
-    struct Pair {
-        int first, second;
-    };
-
-    struct cell {
-        float f, g, h;
-        int parent_i, parent_j;
-
-        cell() : f(FLT_MAX), g(FLT_MAX), h(FLT_MAX), parent_i(-1), parent_j(-1) {}
-    };
-
     enum result {
-        PATH_NOT_FOUND,
-        INVALID_SOURCE,
-        INVALID_DESTINATION,
-        PATH_IS_BLOCKED,
-        ALREADY_AT_DESTINATION,
-        FOUND_PATH
+        PATH_NOT_FOUND = -1,
+        FOUND_PATH = 0,
+        INVALID_SOURCE = 1,
+        INVALID_DESTINATION = 2,
+        PATH_IS_BLOCKED = 3,
+        ALREADY_AT_DESTINATION = 4,
     };
 
-    // bool isValid(int row, int col);
-    // bool isUnBlocked(int grid[ROW][COL], int row, int col);
-    // bool isDestination(int row, int col, Pair dest);
-    // float calculateHValue(int row, int col, Pair dest);
-    // bool checkF(cell cellDetails[ROW][COL], int row, int col, float newF);
-    // void addPPair(hls::stream<Pair>& openList, Pair p);
-    // void getNext(hls::stream<Pair>& openList, Pair* next);
-    // bool checkForEmpty(hls::stream<Pair>& openList);
+    typedef ap_int<32> int32;
+    typedef ap_fixed<32, 16> float32;
 
-    void asearch(int gridIn[], Pair src, Pair dest, result* res, cell cellOut[ROW * COL]) {
-    #pragma HLS DATAFLOW
-        int grid[ROW][COL];
+    typedef struct {
+        int32 parent_i;
+        int32 parent_j;
+        float32 f, g, h;
+    } cell_t;
 
-        // Copy input data to 2D grid array
+    typedef struct {
+        float32 f;
+        int32 i, j;
+    } pPair_t;
+
+    // Optimized A* Search Function
+    void asearch(int32 gridIn[], int32 src_i, int32 src_j, int32 dest_i, int32 dest_j, 
+                 result* res, cell_t cellOut[], int ROW, int COL) {
+
+    #pragma HLS INTERFACE m_axi depth=1024 port=gridIn bundle=gmem
+    #pragma HLS INTERFACE m_axi depth=1024 port=cellOut bundle=gmem
+    #pragma HLS INTERFACE s_axilite port=src_i
+    #pragma HLS INTERFACE s_axilite port=src_j
+    #pragma HLS INTERFACE s_axilite port=dest_i
+    #pragma HLS INTERFACE s_axilite port=dest_j
+    #pragma HLS INTERFACE s_axilite port=res
+    #pragma HLS INTERFACE s_axilite port=ROW
+    #pragma HLS INTERFACE s_axilite port=COL
+    #pragma HLS INTERFACE s_axilite port=return
+
+        // Local grid
+        int32 grid[1024][1024];
+    #pragma HLS ARRAY_PARTITION variable=grid cyclic factor=4 dim=2
+
+        // Load grid into local memory
         for (int i = 0; i < ROW; i++) {
+    #pragma HLS LOOP_TRIPCOUNT min=1 max=1024
             for (int j = 0; j < COL; j++) {
     #pragma HLS PIPELINE II=1
                 grid[i][j] = gridIn[i * COL + j];
             }
         }
 
-        // Initial checks
-        result r = PATH_NOT_FOUND;
-
-        if (!isValid(src.first, src.second)) {
+        // Check for invalid input or immediate termination cases
+        if (src_i < 0 || src_i >= ROW || src_j < 0 || src_j >= COL ||
+            dest_i < 0 || dest_i >= ROW || dest_j < 0 || dest_j >= COL) {
             *res = INVALID_SOURCE;
             return;
         }
 
-        if (!isValid(dest.first, dest.second)) {
-            *res = INVALID_DESTINATION;
-            return;
-        }
-
-        if (!isUnBlocked(grid, src.first, src.second) || !isUnBlocked(grid, dest.first, dest.second)) {
-            *res = PATH_IS_BLOCKED;
-            return;
-        }
-
-        if (isDestination(src.first, src.second, dest)) {
+        // A simple case when the source and destination are the same
+        if (src_i == dest_i && src_j == dest_j) {
             *res = ALREADY_AT_DESTINATION;
             return;
         }
 
-        bool closedList[ROW][COL];
-    #pragma HLS ARRAY_PARTITION variable=closedList complete dim=1
-        memset(closedList, false, sizeof(closedList));
+        // Initialization
+        bool closedList[1024][1024] = {false};
+    #pragma HLS ARRAY_PARTITION variable=closedList cyclic factor=4 dim=2
 
-        cell cellDetails[ROW][COL];
-    #pragma HLS ARRAY_PARTITION variable=cellDetails complete dim=1
+        cell_t cellDetails[1024][1024];
+    #pragma HLS ARRAY_PARTITION variable=cellDetails cyclic factor=4 dim=2
 
         for (int i = 0; i < ROW; i++) {
+    #pragma HLS LOOP_TRIPCOUNT min=1 max=1024
             for (int j = 0; j < COL; j++) {
-    #pragma HLS UNROLL factor=2
-                cellDetails[i][j] = cell();
+    #pragma HLS PIPELINE II=1
+                cellDetails[i][j].f = FLT_MAX;
+                cellDetails[i][j].g = FLT_MAX;
+                cellDetails[i][j].h = FLT_MAX;
+                cellDetails[i][j].parent_i = -1;
+                cellDetails[i][j].parent_j = -1;
             }
         }
 
-        int i = src.first;
-        int j = src.second;
+        // Setting up the source
+        int i = src_i, j = src_j;
         cellDetails[i][j].f = 0.0;
         cellDetails[i][j].g = 0.0;
         cellDetails[i][j].h = 0.0;
         cellDetails[i][j].parent_i = i;
         cellDetails[i][j].parent_j = j;
 
-        hls::stream<Pair> openList;
-        Pair current;
-
-        addPPair(openList, {0, {i, j}});
+        // Main loop
         bool foundDest = false;
-
-        // Main A* Search Loop
-        while (!checkForEmpty(openList) && !foundDest) {
-    #pragma HLS PIPELINE
-            getNext(openList, &current);
-            i = current.second.first;
-            j = current.second.second;
-
-            closedList[i][j] = true;
-
-            // Neighbor checking logic (North, South, East, West, diagonals)
-            for (int d = 0; d < 8; d++) {
+        while (!foundDest) {
+            // Check neighbors
+            for (int dir = 0; dir < 8; dir++) {
     #pragma HLS UNROLL
-                int newI = i + ((d < 4) ? (d == 0 ? -1 : (d == 1 ? 1 : 0)) : (d == 4 || d == 5 ? -1 : 1));
-                int newJ = j + ((d < 4) ? (d == 2 ? 1 : (d == 3 ? -1 : 0)) : (d == 4 || d == 6 ? 1 : -1));
+                int ni = i + (dir == 0 ? -1 : dir == 1 ? 1 : 0);
+                int nj = j + (dir == 2 ? -1 : dir == 3 ? 1 : 0);
+                if (ni >= 0 && ni < ROW && nj >= 0 && nj < COL &&
+                    !closedList[ni][nj] && grid[ni][nj] != 0) {
+                    float32 g = cellDetails[i][j].g + 1.0;
+                    float32 h = calculateHValue(ni, nj, dest_i, dest_j);  // Implement heuristic function
+                    float32 f = g + h;
+                    if (f < cellDetails[ni][nj].f) {
+                        cellDetails[ni][nj].f = f;
+                        cellDetails[ni][nj].g = g;
+                        cellDetails[ni][nj].h = h;
+                        cellDetails[ni][nj].parent_i = i;
+                        cellDetails[ni][nj].parent_j = j;
 
-                if (isValid(newI, newJ)) {
-                    if (isDestination(newI, newJ, dest)) {
-                        cellDetails[newI][newJ].parent_i = i;
-                        cellDetails[newI][newJ].parent_j = j;
-                        foundDest = true;
-                        break;
-                    } else if (!closedList[newI][newJ] && isUnBlocked(grid, newI, newJ)) {
-                        float newG = cellDetails[i][j].g + ((d < 4) ? 1.0f : 1.414f);
-                        float newH = calculateHValue(newI, newJ, dest);
-                        float newF = newG + newH;
-
-                        if (checkF(cellDetails, newI, newJ, newF)) {
-                            addPPair(openList, {newF, {newI, newJ}});
-                            cellDetails[newI][newJ].f = newF;
-                            cellDetails[newI][newJ].g = newG;
-                            cellDetails[newI][newJ].h = newH;
-                            cellDetails[newI][newJ].parent_i = i;
-                            cellDetails[newI][newJ].parent_j = j;
+                        if (ni == dest_i && nj == dest_j) {
+                            foundDest = true;
+                            break;
                         }
                     }
                 }
             }
+            if (foundDest) break;
+            closedList[i][j] = true;  // Mark current as closed
         }
 
-        // Copy results
-        for (int x = 0; x < ROW; x++) {
-            for (int y = 0; y < COL; y++) {
+        // Copy cellDetails back to output
+        for (int i = 0; i < ROW; i++) {
+    #pragma HLS LOOP_TRIPCOUNT min=1 max=1024
+            for (int j = 0; j < COL; j++) {
     #pragma HLS PIPELINE II=1
-                cellOut[x * COL + y] = cellDetails[x][y];
+                cellOut[i * COL + j] = cellDetails[i][j];
             }
         }
 
         *res = foundDest ? FOUND_PATH : PATH_NOT_FOUND;
     }
-
-
 }
 
 bool isValid(int row, int col)
