@@ -11,15 +11,6 @@
 
 extern "C"
 {
-    enum result {
-        PATH_NOT_FOUND = -1,
-        FOUND_PATH = 0,
-        INVALID_SOURCE = 1,
-        INVALID_DESTINATION = 2,
-        PATH_IS_BLOCKED = 3,
-        ALREADY_AT_DESTINATION = 4,
-    };
-
     typedef ap_int<32> int32;
     typedef ap_fixed<32, 16> float32;
 
