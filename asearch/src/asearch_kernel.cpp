@@ -11,7 +11,8 @@
 
 extern "C"
 {
-    void asearch(int gridIn[], Pair src, Pair dest, result* res, cell cellOut[]) {
+    void asearch(int gridIn[], Pair src, Pair dest, result* res, cell cellOut[])
+    {
         const int directions[8][2] = {
             {-1, 0},  // North
             {1, 0},   // South
@@ -22,66 +23,53 @@ extern "C"
             {1, 1},   // South-East
             {1, -1}   // South-West
         };
-        // Local grid copy
+
         int grid[ROW][COL];
-    #pragma HLS ARRAY_PARTITION variable=grid dim=2 complete
-        for (int x = 0; x < ROW; x++) {
-    #pragma HLS PIPELINE
-            for (int y = 0; y < COL; y++) {
+        for (int x = 0; x < ROW; x++)
+        {
+            for (int y = 0; y < COL; y++)
+            {
                 grid[x][y] = gridIn[x * COL + y];
             }
         }
 
-        // Local variables
         result r = PATH_NOT_FOUND;
 
-        // Validation checks
-        if (!isValid(src.first, src.second)) {
+        if (!isValid(src.first, src.second))
+        {
             *res = INVALID_SOURCE;
             return;
         }
 
-        if (!isValid(dest.first, dest.second)) {
+        if (!isValid(dest.first, dest.second))
+        {
             *res = INVALID_DESTINATION;
             return;
         }
 
-        if (!isUnBlocked(grid, src.first, src.second) ||
-            !isUnBlocked(grid, dest.first, dest.second)) {
+        if (!isUnBlocked(grid, src.first, src.second) || !isUnBlocked(grid, dest.first, dest.second))
+        {
             *res = PATH_IS_BLOCKED;
             return;
         }
 
-        if (isDestination(src.first, src.second, dest)) {
+        if (isDestination(src.first, src.second, dest))
+        {
             *res = ALREADY_AT_DESTINATION;
             return;
         }
 
-        // Initialize closed list
-        bool closedList[ROW][COL];
-    #pragma HLS ARRAY_PARTITION variable=closedList dim=2 complete
-        for (int x = 0; x < ROW; x++) {
-    #pragma HLS UNROLL
-            for (int y = 0; y < COL; y++) {
-                closedList[x][y] = false;
-            }
-        }
+        bool closedList[ROW][COL] = {false};
 
-        // Cell details
         cell cellDetails[ROW][COL];
-    #pragma HLS ARRAY_PARTITION variable=cellDetails dim=2 complete
-        for (int i = 0; i < ROW; i++) {
-    #pragma HLS UNROLL
-            for (int j = 0; j < COL; j++) {
-                cellDetails[i][j].f = FLT_MAX;
-                cellDetails[i][j].g = FLT_MAX;
-                cellDetails[i][j].h = FLT_MAX;
-                cellDetails[i][j].parent_i = -1;
-                cellDetails[i][j].parent_j = -1;
+        for (int i = 0; i < ROW; i++)
+        {
+            for (int j = 0; j < COL; j++)
+            {
+                cellDetails[i][j] = { -1, -1, FLT_MAX, FLT_MAX, FLT_MAX };
             }
         }
 
-        // Set source details
         int i = src.first, j = src.second;
         cellDetails[i][j].f = 0.0;
         cellDetails[i][j].g = 0.0;
@@ -89,61 +77,79 @@ extern "C"
         cellDetails[i][j].parent_i = i;
         cellDetails[i][j].parent_j = j;
 
-        // Priority queue for open list
         pPair openList[ROW * COL];
-        int openListSize = 0;
-    #pragma HLS ARRAY_PARTITION variable=openList dim=1 complete
-        addPPair(openList, make_pair(0.0, make_pair(i, j)), &openListSize);
+        for (int k = 0; k < ROW * COL; k++)
+        {
+            openList[k] = make_pair(-1, make_pair(-1, -1));
+        }
 
+        addPPair(openList, make_pair(0.0, make_pair(i, j)));
         bool foundDest = false;
 
-        // Main loop
-        while (openListSize > 0 && !foundDest) {
-    #pragma HLS PIPELINE
-            // Extract the node with minimum f value
-            pPair p = openList[0];
-            removePPair(openList, &openListSize);
+        while (true)
+        {
+            int index = -1;
+            for (int k = 0; k < ROW * COL; k++)
+            {
+                if (openList[k].first != -1)
+                {
+                    index = k;
+                    break;
+                }
+            }
+
+            if (index == -1) // Open list is empty
+                break;
+
+            pPair p = openList[index];
+            removePPair(openList, index);
 
             i = p.second.first;
             j = p.second.second;
             closedList[i][j] = true;
 
-            // Neighbor exploration (8 directions)
-            for (int d = 0; d < 8; d++) {
-    #pragma HLS UNROLL
+            for (int d = 0; d < 8; d++)
+            {
                 int newI = i + directions[d][0];
                 int newJ = j + directions[d][1];
-                double stepCost = (d < 4) ? 1.0 : 1.414;  // Diagonal cost
 
-                if (isValid(newI, newJ) && !closedList[newI][newJ] &&
-                    isUnBlocked(grid, newI, newJ)) {
-                    if (isDestination(newI, newJ, dest)) {
+                if (isValid(newI, newJ))
+                {
+                    if (isDestination(newI, newJ, dest))
+                    {
                         cellDetails[newI][newJ].parent_i = i;
                         cellDetails[newI][newJ].parent_j = j;
                         foundDest = true;
                         break;
                     }
+                    else if (!closedList[newI][newJ] && isUnBlocked(grid, newI, newJ))
+                    {
+                        double newG = cellDetails[i][j].g + ((d < 4) ? 1.0 : 1.414);
+                        double newH = calculateHValue(newI, newJ, dest);
+                        double newF = newG + newH;
 
-                    double newG = cellDetails[i][j].g + stepCost;
-                    double newH = calculateHValue(newI, newJ, dest);
-                    double newF = newG + newH;
+                        if (newF < cellDetails[newI][newJ].f)
+                        {
+                            addPPair(openList, make_pair(newF, make_pair(newI, newJ)));
 
-                    if (checkF(cellDetails, newI, newJ, newF)) {
-                        addPPair(openList, make_pair(newF, make_pair(newI, newJ)), &openListSize);
-                        cellDetails[newI][newJ].f = newF;
-                        cellDetails[newI][newJ].g = newG;
-                        cellDetails[newI][newJ].h = newH;
-                        cellDetails[newI][newJ].parent_i = i;
-                        cellDetails[newI][newJ].parent_j = j;
+                            cellDetails[newI][newJ].f = newF;
+                            cellDetails[newI][newJ].g = newG;
+                            cellDetails[newI][newJ].h = newH;
+                            cellDetails[newI][newJ].parent_i = i;
+                            cellDetails[newI][newJ].parent_j = j;
+                        }
                     }
                 }
             }
+
+            if (foundDest)
+                break;
         }
 
-        // Output results
-        for (int x = 0; x < ROW; x++) {
-    #pragma HLS PIPELINE
-            for (int y = 0; y < COL; y++) {
+        for (int x = 0; x < ROW; x++)
+        {
+            for (int y = 0; y < COL; y++)
+            {
                 cellOut[x * COL + y] = cellDetails[x][y];
             }
         }
