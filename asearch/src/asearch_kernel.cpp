@@ -36,14 +36,14 @@ extern "C"
         FOUND_PATH
     };
 
-    bool isValid(int row, int col);
-    bool isUnBlocked(int grid[ROW][COL], int row, int col);
-    bool isDestination(int row, int col, Pair dest);
-    float calculateHValue(int row, int col, Pair dest);
-    bool checkF(cell cellDetails[ROW][COL], int row, int col, float newF);
-    void addPPair(hls::stream<Pair>& openList, Pair p);
-    void getNext(hls::stream<Pair>& openList, Pair* next);
-    bool checkForEmpty(hls::stream<Pair>& openList);
+    // bool isValid(int row, int col);
+    // bool isUnBlocked(int grid[ROW][COL], int row, int col);
+    // bool isDestination(int row, int col, Pair dest);
+    // float calculateHValue(int row, int col, Pair dest);
+    // bool checkF(cell cellDetails[ROW][COL], int row, int col, float newF);
+    // void addPPair(hls::stream<Pair>& openList, Pair p);
+    // void getNext(hls::stream<Pair>& openList, Pair* next);
+    // bool checkForEmpty(hls::stream<Pair>& openList);
 
     void asearch(int gridIn[], Pair src, Pair dest, result* res, cell cellOut[ROW * COL]) {
     #pragma HLS DATAFLOW
