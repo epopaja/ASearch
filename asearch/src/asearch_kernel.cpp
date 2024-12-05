@@ -12,6 +12,16 @@
 extern "C"
 {
     void asearch(int gridIn[], Pair src, Pair dest, result* res, cell cellOut[]) {
+        const int directions[8][2] = {
+            {-1, 0},  // North
+            {1, 0},   // South
+            {0, 1},   // East
+            {0, -1},  // West
+            {-1, 1},  // North-East
+            {-1, -1}, // North-West
+            {1, 1},   // South-East
+            {1, -1}   // South-West
+        };
         // Local grid copy
         int grid[ROW][COL];
     #pragma HLS ARRAY_PARTITION variable=grid dim=2 complete
